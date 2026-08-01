@@ -35,6 +35,7 @@
   align-items: center;
   gap: $spacing-2;
   padding: $spacing-2 $spacing-3;
+  border: 1px solid transparent;
   border-radius: $border-radius-full;
   background-color: var(--surface-sunken);
   color: var(--text-muted);
@@ -43,9 +44,20 @@
   white-space: nowrap;
 }
 
+/* Verde sobre verde claro: 9.23:1. */
 .steps__item--done {
   background-color: var(--success-surface);
   color: var(--success-strong);
+}
+
+/* El paso actual se marca con borde y peso además del color, porque el color por
+   sí solo no distingue "hecho" de "en curso" para quien no ve el verde.
+   $color-primary sobre --surface-card da 9.66:1. */
+.steps__item--current {
+  background-color: var(--surface-card);
+  border-color: $color-primary;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
 }
 
 .steps__num {
@@ -57,6 +69,12 @@
   background-color: var(--surface-card);
   font-size: $font-size-xs;
   font-weight: $font-weight-bold;
+}
+
+/* Sobre la píldora blanca del paso actual, un número blanco desaparecería. */
+.steps__item--current .steps__num {
+  background-color: $color-primary;
+  color: var(--surface-card);
 }
 
 /* ==========================================================================
@@ -73,15 +91,22 @@
 }
 
 .step__hint {
-  margin: 0 0 $spacing-4;
+  margin: $spacing-4 0 0;
   font-size: $font-size-sm;
   color: var(--text-muted);
+}
+
+/* Consultorio como contexto de la sección, una sola vez. */
+.step__office {
+  margin: 0 0 $spacing-4;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--text-body);
 }
 
 .step__grid {
   display: grid;
   gap: $spacing-5;
-  margin-bottom: $spacing-6;
   grid-template-columns: 1fr;
 }
 
@@ -89,6 +114,47 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-5;
+}
+
+.notice__text {
+  margin: 0 0 $spacing-3;
+}
+
+/* ==========================================================================
+   Atajos de fecha
+   ========================================================================== */
+
+.quick-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-2;
+}
+
+/* --text-body sobre --surface-sunken da 9.45:1; blanco sobre $color-primary,
+   9.66:1. */
+.chip {
+  /* 48px, el área de toque mínima cómoda con el pulgar. */
+  min-height: 3rem;
+  padding: 0 $spacing-4;
+  border: 1px solid var(--border-strong);
+  border-radius: $border-radius-full;
+  background-color: var(--surface-sunken);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  text-transform: capitalize;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.chip--selected {
+  background-color: $color-primary;
+  border-color: $color-primary;
+  color: var(--surface-card);
 }
 
 /* ==========================================================================
@@ -101,25 +167,25 @@
   padding: 0;
   display: grid;
   gap: $spacing-3;
-  /* En teléfono entran dos por fila con área de toque amplia; la cuadrícula
-     crece sola en pantallas mayores. */
-  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  /* Tres por fila en teléfono con área de toque amplia; la cuadrícula crece sola
+     en pantallas mayores. */
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
 }
 
 .slot {
   width: 100%;
-  min-height: 4.5rem;
+  min-height: 3.5rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: $spacing-1;
-  padding: $spacing-3 $spacing-4;
+  padding: $spacing-3 $spacing-2;
   border: 1px solid var(--border-strong);
   border-radius: $border-radius-lg;
   background-color: var(--surface-card);
   font-family: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition:
     border-color 0.15s ease,
@@ -141,16 +207,6 @@
   }
 }
 
-/* El gris tenue sobre la superficie hundida da 4.34:1. WCAG 1.4.3 exime a los
-   controles desactivados, pero se usa el tono más oscuro y se refuerza con borde
-   discontinuo y hora tachada para que el estado no dependa solo del color. */
-.slot:disabled {
-  cursor: not-allowed;
-  background-color: var(--surface-sunken);
-  border-style: dashed;
-  color: var(--text-default);
-}
-
 .slot__time {
   font-size: $font-size-lg;
   font-weight: $font-weight-bold;
@@ -158,23 +214,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-.slot:disabled .slot__time {
-  color: var(--text-default);
-  text-decoration: line-through;
-}
-
+/* Solo aparece si la búsqueda devolvió franjas de varios consultorios; con uno
+   solo, el nombre va una vez en la cabecera de la sección. */
 .slot__meta {
   font-size: $font-size-xs;
   color: var(--text-muted);
   line-height: 1.3;
-}
-
-.slot__tag {
-  font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
 }
 
 /* ==========================================================================
@@ -221,7 +266,7 @@
 }
 
 .skeleton--slot {
-  height: 4.5rem;
+  height: 3.5rem;
 }
 
 /* ==========================================================================
@@ -235,6 +280,11 @@
 
   .step__grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* La fecha lleva los atajos debajo, así que ocupa la fila entera. */
+  .field--date {
+    grid-column: 1 / -1;
   }
 
   .summary {

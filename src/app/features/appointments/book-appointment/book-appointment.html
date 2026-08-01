@@ -1,11 +1,14 @@
 <header class="page-head">
   <span class="eyebrow">Nueva cita</span>
   <h1 class="page-head__title">Agendar una cita</h1>
-  <p class="page-head__lead">Elige el servicio y el día, y te mostramos los horarios libres.</p>
+  <p class="page-head__lead">
+    Elige el servicio, el turno y el día. Los horarios libres aparecen solos.
+  </p>
 </header>
 
-<!-- Región viva persistente: anuncia los cambios de estado a un lector de
-     pantalla sin depender de que aparezcan las cajas del esqueleto. -->
+<!-- Región viva persistente: está en el DOM desde el primer render, antes de que
+     su contenido cambie, que es la condición para que un lector de pantalla la
+     anuncie. -->
 <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
   @if (isLoadingParams()) {
     Cargando datos para agendar.
@@ -13,8 +16,12 @@
   @if (isLoadingSchedules()) {
     Buscando horarios disponibles.
   }
-  @if (!isLoadingSchedules() && schedules().length > 0) {
-    {{ availableSchedules().length }} horarios disponibles de {{ schedules().length }}.
+  @if (!isLoadingSchedules() && hasSearched()) {
+    {{ availableSchedules().length }} horarios disponibles.
+  }
+  @if (selectedSchedule(); as chosen) {
+    Horario de las {{ chosen.timeStart | clockTime }} elegido. Revisa y confirma tu cita al final de
+    la página.
   }
 </div>
 
@@ -33,75 +40,89 @@
 @if (params(); as data) {
   <!-- Indicador de progreso: el paciente ve cuántos pasos hay y en cuál está. -->
   <ol class="steps" aria-label="Progreso del agendado">
-    <li class="steps__item steps__item--done" aria-current="step">
-      <span class="steps__num">1</span> Servicio y fecha
-    </li>
-    <li class="steps__item" [class.steps__item--done]="schedules().length > 0">
-      <span class="steps__num">2</span> Horario
-    </li>
-    <li class="steps__item" [class.steps__item--done]="selectedScheduleId() !== null">
-      <span class="steps__num">3</span> Confirmar
-    </li>
+    @for (step of steps; track step.number) {
+      <li
+        class="steps__item"
+        [class.steps__item--done]="currentStep() > step.number"
+        [class.steps__item--current]="currentStep() === step.number"
+        [attr.aria-current]="currentStep() === step.number ? 'step' : null"
+      >
+        <span class="steps__num">{{ step.number }}</span> {{ step.title }}
+      </li>
+    }
   </ol>
 
-  <form [formGroup]="form" (ngSubmit)="searchSchedules()">
-    <section class="card card--featured step" aria-labelledby="step1-title">
-      <h2 class="step__title" id="step1-title">¿Para quién y qué necesitas?</h2>
+  <section class="card card--featured step" aria-labelledby="step1-title">
+    <h2 class="step__title" id="step1-title">¿Para quién y qué necesitas?</h2>
 
-      <div class="step__grid">
-        <div class="field">
-          <label for="book-patient">Paciente</label>
-          <select id="book-patient" formControlName="beneficiaryID">
-            @for (option of patientOptions(); track option.id) {
-              <option [value]="option.id">{{ option.label }}</option>
-            }
-          </select>
-          @if (!hasBeneficiaries()) {
-            <p class="field__hint">
-              Puedes agendar para ti. Si necesitas agendar para un familiar, pide que lo registren
-              como beneficiario en recepción.
-            </p>
+    <form [formGroup]="form" class="step__grid">
+      <div class="field">
+        <label for="book-patient">Paciente</label>
+        <select id="book-patient" formControlName="beneficiaryID">
+          @for (option of patientOptions(); track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        @if (!hasBeneficiaries()) {
+          <p class="field__hint">
+            Puedes agendar para ti. Si necesitas agendar para un familiar, pide que lo registren
+            como beneficiario en recepción.
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="book-service">Servicio</label>
+        <select id="book-service" formControlName="serviceID" required>
+          <option value="">Selecciona un servicio</option>
+          @for (service of data.services ?? []; track service.id) {
+            <option [value]="service.id">{{ service.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="book-shift">Turno</label>
+        <select id="book-shift" formControlName="shiftID" required>
+          <option value="">Selecciona un turno</option>
+          @for (shift of data.shifts ?? []; track shift.id) {
+            <option [value]="shift.id">{{ shift.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Los atajos cubren los días con los que se pide casi todo; el calendario
+           queda para las fechas lejanas. -->
+      <div class="field field--date">
+        <label for="book-date">Fecha</label>
+
+        <div class="quick-dates" role="group" aria-label="Días cercanos">
+          @for (day of quickDates; track day.value) {
+            <button
+              type="button"
+              class="chip"
+              [class.chip--selected]="selectedDate() === day.value"
+              [attr.aria-pressed]="selectedDate() === day.value"
+              (click)="chooseDate(day.value)"
+            >
+              {{ day.label }}
+            </button>
           }
         </div>
 
-        <div class="field">
-          <label for="book-service">Servicio</label>
-          <select id="book-service" formControlName="serviceID" required>
-            <option value="">Selecciona un servicio</option>
-            @for (service of data.services ?? []; track service.id) {
-              <option [value]="service.id">{{ service.name }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="book-shift">Turno</label>
-          <select id="book-shift" formControlName="shiftID" required>
-            <option value="">Selecciona un turno</option>
-            @for (shift of data.shifts ?? []; track shift.id) {
-              <option [value]="shift.id">{{ shift.name }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="book-date">Fecha</label>
-          <input
-            id="book-date"
-            type="date"
-            formControlName="appointmentDate"
-            [min]="today"
-            required
-          />
-          <p class="field__hint">No se pueden agendar fechas pasadas.</p>
-        </div>
+        <input
+          id="book-date"
+          type="date"
+          formControlName="appointmentDate"
+          [min]="today"
+          required
+        />
+        <p class="field__hint">
+          Usa el calendario para elegir otro día. No se agendan fechas pasadas.
+        </p>
       </div>
-
-      <button type="submit" class="btn btn--primary btn--block" [disabled]="isLoadingSchedules()">
-        {{ isLoadingSchedules() ? 'Buscando…' : 'Ver horarios disponibles' }}
-      </button>
-    </section>
-  </form>
+    </form>
+  </section>
 
   @if (isLoadingSchedules()) {
     <section class="card" aria-hidden="true">
@@ -114,54 +135,66 @@
     </section>
   }
 
-  @if (!isLoadingSchedules() && schedules().length > 0) {
+  @if (schedulesError(); as message) {
+    <section class="card step">
+      <div class="notice notice--error" role="alert">
+        <p class="notice__text">{{ message }}</p>
+        <button type="button" class="btn btn--ghost" (click)="retrySearch()">Reintentar</button>
+      </div>
+    </section>
+  }
+
+  @if (!isLoadingSchedules() && !schedulesError() && hasSearched()) {
     <section class="card step" aria-labelledby="step2-title">
       <h2 class="step__title" id="step2-title">Elige un horario</h2>
 
       @if (availableSchedules().length === 0) {
         <p class="notice notice--info">
-          Todos los horarios de ese día están ocupados. Prueba con otra fecha o con el otro turno.
+          No queda ningún horario libre ese día en ese turno. Prueba con otra fecha o con el otro
+          turno.
         </p>
       } @else {
-        <p class="step__hint">
-          {{ availableSchedules().length }} de {{ schedules().length }} horarios disponibles.
-        </p>
+        <!-- El consultorio se dice una vez como contexto: su nombre ya incluye el
+             servicio, y repetirlo bajo cada franja no distingue nada. -->
+        @if (officeNames().length === 1) {
+          <p class="step__office">{{ officeNames()[0] }}</p>
+        }
+
         <ul class="slots" role="list">
-          @for (schedule of schedules(); track schedule.id) {
+          @for (schedule of availableSchedules(); track schedule.id) {
             <li>
               <button
                 type="button"
                 class="slot"
                 [class.slot--selected]="selectedScheduleId() === schedule.id"
-                [disabled]="schedule.statusID !== 1"
                 [attr.aria-pressed]="selectedScheduleId() === schedule.id"
-                [attr.aria-label]="
-                  schedule.statusID === 1
-                    ? 'Reservar de ' +
-                      schedule.timeStart +
-                      ' a ' +
-                      schedule.timeEnd +
-                      ' en ' +
-                      schedule.officeName
-                    : 'De ' + schedule.timeStart + ' a ' + schedule.timeEnd + ', no disponible'
-                "
+                [attr.aria-label]="'Reservar a las ' + (schedule.timeStart | clockTime)"
                 (click)="selectSchedule(schedule)"
               >
-                <span class="slot__time">{{ schedule.timeStart }}</span>
-                <span class="slot__meta">{{ schedule.officeName }}</span>
-                @if (schedule.statusID !== 1) {
-                  <span class="slot__tag">Ocupado</span>
+                <span class="slot__time">{{ schedule.timeStart | clockTime }}</span>
+                @if (officeNames().length > 1) {
+                  <span class="slot__meta">{{ schedule.officeName }}</span>
                 }
               </button>
             </li>
           }
         </ul>
+
+        @if (occupiedCount() > 0) {
+          <p class="step__hint">
+            @if (occupiedCount() === 1) {
+              Hay 1 horario más ese día, ya reservado.
+            } @else {
+              Hay {{ occupiedCount() }} horarios más ese día, ya reservados.
+            }
+          </p>
+        }
       }
     </section>
   }
 
   @if (selectedSchedule(); as chosen) {
-    <section class="card card--featured step" aria-labelledby="step3-title">
+    <section class="card card--featured step" aria-labelledby="step3-title" #confirmSection>
       <h2 class="step__title" id="step3-title">Confirma tu cita</h2>
 
       <!-- Resumen antes de confirmar: el paciente ve exactamente qué va a reservar. -->
@@ -171,7 +204,10 @@
         <dt>Servicio</dt>
         <dd>{{ selectedServiceName() }}</dd>
         <dt>Fecha y hora</dt>
-        <dd>{{ selectedDateLabel() }} · {{ chosen.timeStart }} a {{ chosen.timeEnd }}</dd>
+        <dd>
+          {{ selectedDateLabel() }} · de {{ chosen.timeStart | clockTime }} a
+          {{ chosen.timeEnd | clockTime }} h
+        </dd>
         <dt>Consultorio</dt>
         <dd>{{ chosen.officeName }}</dd>
       </dl>

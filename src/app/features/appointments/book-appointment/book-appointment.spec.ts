@@ -23,7 +23,7 @@ const FRANJAS: OfficeSchedule[] = [
     timeStart: '08:00:00',
     timeEnd: '08:30:00',
     timeDuration: '30m',
-    officeName: 'Consultorio 3',
+    officeName: 'Consultorio 3: Medicina general matutino',
     statusID: 1,
     shiftID: 1,
   },
@@ -32,7 +32,7 @@ const FRANJAS: OfficeSchedule[] = [
     timeStart: '08:30:00',
     timeEnd: '09:00:00',
     timeDuration: '30m',
-    officeName: 'Consultorio 3',
+    officeName: 'Consultorio 3: Medicina general matutino',
     statusID: 2,
     shiftID: 1,
   },
@@ -73,26 +73,70 @@ describe('BookAppointment', () => {
       schedules: () => OfficeSchedule[];
       selectedScheduleId: () => number | null;
       availableSchedules: () => OfficeSchedule[];
-      searchSchedules: () => void;
+      occupiedCount: () => number;
+      officeNames: () => string[];
+      currentStep: () => number;
+      hasSearched: () => boolean;
       selectSchedule: (s: OfficeSchedule) => void;
+      chooseDate: (v: string) => void;
     };
   }
 
+  /** Completa la combinación —que ya dispara la búsqueda sola— y elige franja. */
   function elegirFranja() {
     const c = api();
     c.form.patchValue({ serviceID: '13', shiftID: '1', appointmentDate: '2026-08-03' });
-    c.searchSchedules();
     c.selectSchedule(FRANJAS[0]);
   }
 
-  it('carga los parámetros al iniciar', () => {
+  it('carga los parámetros al iniciar y no busca nada todavía', () => {
     expect(api().schedules().length).toBe(0);
+    expect(api().hasSearched()).toBe(false);
+  });
+
+  // Antes había que pulsar "Ver horarios disponibles" aunque los tres campos ya
+  // estuvieran completos: un paso más sin información nueva que aportar.
+  it('busca sola en cuanto la combinación está completa', () => {
+    api().form.patchValue({ serviceID: '13', shiftID: '1', appointmentDate: '2026-08-03' });
+
+    expect(api().hasSearched()).toBe(true);
+    expect(api().schedules().length).toBe(2);
+  });
+
+  it('no busca mientras falte alguno de los tres campos', () => {
+    api().form.patchValue({ serviceID: '13', shiftID: '1' });
+    expect(api().hasSearched()).toBe(false);
   });
 
   it('separa las franjas disponibles de las ocupadas', () => {
     elegirFranja();
     expect(api().schedules().length).toBe(2);
     expect(api().availableSchedules().length).toBe(1);
+    expect(api().occupiedCount()).toBe(1);
+  });
+
+  // El nombre del consultorio ya incluye el servicio, así que se muestra una vez
+  // como contexto de la sección en lugar de bajo cada franja.
+  it('reconoce que todas las franjas son del mismo consultorio', () => {
+    elegirFranja();
+    expect(api().officeNames()).toEqual(['Consultorio 3: Medicina general matutino']);
+  });
+
+  it('mueve el paso actual conforme avanza el agendado', () => {
+    expect(api().currentStep()).toBe(1);
+
+    api().form.patchValue({ serviceID: '13', shiftID: '1', appointmentDate: '2026-08-03' });
+    expect(api().currentStep()).toBe(2);
+
+    api().selectSchedule(FRANJAS[0]);
+    expect(api().currentStep()).toBe(3);
+  });
+
+  it('el atajo de fecha rellena el campo y dispara la búsqueda', () => {
+    api().form.patchValue({ serviceID: '13', shiftID: '1' });
+    api().chooseDate('2026-08-04');
+
+    expect(api().hasSearched()).toBe(true);
   });
 
   // Este es el caso que rompía: la suscripción escuchaba el formulario completo,
@@ -120,22 +164,24 @@ describe('BookAppointment', () => {
     expect(api().selectedScheduleId()).toBe(1);
   });
 
-  it('cambiar el servicio SÍ invalida las franjas cargadas', () => {
+  // Con la búsqueda automática la lista se repuebla enseguida, así que lo que hay
+  // que garantizar es que la franja elegida NO sobreviva al cambio: dejarla
+  // permitiría reservar una franja de otra combinación.
+  it('cambiar el servicio suelta la franja elegida', () => {
     elegirFranja();
     api().form.controls['serviceID'].setValue('8');
-    expect(api().schedules().length).toBe(0);
     expect(api().selectedScheduleId()).toBeNull();
   });
 
-  it('cambiar la fecha SÍ invalida las franjas cargadas', () => {
+  it('cambiar la fecha suelta la franja elegida', () => {
     elegirFranja();
     api().form.controls['appointmentDate'].setValue('2026-08-04');
-    expect(api().schedules().length).toBe(0);
+    expect(api().selectedScheduleId()).toBeNull();
   });
 
-  it('cambiar el turno SÍ invalida las franjas cargadas', () => {
+  it('cambiar el turno suelta la franja elegida', () => {
     elegirFranja();
     api().form.controls['shiftID'].setValue('2');
-    expect(api().schedules().length).toBe(0);
+    expect(api().selectedScheduleId()).toBeNull();
   });
 });
