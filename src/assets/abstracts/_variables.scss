@@ -30,12 +30,29 @@ $color-error-hover: #8a2f2f; // Color de error al hacer hover
 // 2. Tipografía (Fuentes, Tamaños y Pesos)
 // --------------------------------------------------------------------------
 // Familias Tipográficas
+//
+// Manrope para texto y titulares; Inter para etiquetas y elementos funcionales
+// (botones, insignias), que es la división que pide el sistema de diseño: la
+// geometría abierta de Manrope se lee bien en datos clínicos y el tono neutro
+// de Inter distingue lo que es interfaz de lo que es contenido.
+//
+// Las dos van autoalojadas en `src/assets/_fonts.scss`. Antes aquí se pedían
+// 'Poppins' e 'Inter' y no se cargaba ninguna: todo caía en la fuente del
+// sistema. El nombre con sufijo "Variable" es el que declara fontsource; detrás
+// va la estática por si alguien la tiene instalada, y al final el sistema.
 $font-family-base:
+  'Manrope Variable',
+  'Manrope',
+  system-ui,
+  -apple-system,
+  sans-serif;
+$font-family-heading: $font-family-base;
+$font-family-label:
+  'Inter Variable',
   'Inter',
   system-ui,
   -apple-system,
   sans-serif;
-$font-family-heading: 'Poppins', 'Inter', sans-serif;
 $font-family-mono: 'Fira Code', monospace;
 
 // Tamaños de Fuente (Escala)
@@ -79,7 +96,8 @@ $border-radius-base: 0.25rem; // 4px
 $border-radius-md: 0.375rem; // 6px
 $border-radius-lg: 0.5rem; // 8px
 $border-radius-xl: 0.75rem; // 12px
-$border-radius-2xl: 1rem; // 16px
+$border-radius-2xl: 1rem; // 16px — tarjetas y modales
+$border-radius-3xl: 1.5rem; // 24px — contenedores grandes y secciones
 $border-radius-full: 9999px; // Para píldoras o círculos perfectos
 
 // Grosores de borde
@@ -103,6 +121,16 @@ $shadow-xl:
   0 20px 25px -5px rgba(0, 0, 0, 0.1),
   0 10px 10px -5px rgba(0, 0, 0, 0.04);
 $shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+// Elevación tonal: en vez de negro con opacidad, la sombra se tiñe del verde de
+// la marca y se difumina mucho. Da la sensación de que la tarjeta está apoyada
+// sobre la página en lugar de recortada contra ella, y no ensucia el color del
+// fondo como hace un gris neutro.
+$shadow-tinted: 0 8px 30px rgba($color-primary, 0.08);
+$shadow-tinted-strong: 0 12px 28px rgba($color-primary, 0.16);
+// Para la acción principal en forma de píldora, que necesita despegarse más.
+$shadow-primary-pill: 0 8px 20px rgba($color-primary, 0.22);
+$shadow-primary-pill-hover: 0 12px 26px rgba($color-primary, 0.3);
 
 // --------------------------------------------------------------------------
 // 6. Transiciones y Animaciones (Transitions & Timings)

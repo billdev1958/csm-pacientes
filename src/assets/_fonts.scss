@@ -1,0 +1,72 @@
+// ==========================================================================
+// Tipografía autoalojada
+// ==========================================================================
+//
+// El portal declaraba 'Poppins' e 'Inter' desde el principio pero no cargaba
+// ninguna de las dos: no había @font-face, ni archivos, ni paquetes, ni
+// peticiones externas. Todo se renderizaba con la fuente del sistema. Esta es,
+// por tanto, la primera tipografía real de la aplicación.
+//
+// Manrope para texto y titulares, Inter para etiquetas y elementos funcionales
+// (insignias, botones), como pide el sistema de diseño.
+//
+// Se declaran los @font-face a mano en lugar de incluir el `index.css` de
+// fontsource porque ese trae los seis o siete subconjuntos de cada familia
+// —cirílico, griego, vietnamita— y el compilador copiaría los 293 kB de
+// archivos al build aunque el navegador nunca descargue más que el latino.
+// Aquí se copia solo lo que se va a usar.
+//
+// Cero peticiones externas: los .woff2 salen de node_modules y los sirve el
+// mismo origen que la aplicación. No hay Google Fonts ni CDN.
+//
+// `font-display: swap` a propósito: el texto se pinta de inmediato con la
+// fuente del sistema y se recompone al llegar la nuestra. En una pantalla que
+// alguien abre para ver a qué hora es su cita, esperar a la fuente sería
+// esconder el dato.
+
+/// Manrope: cuerpo y titulares.
+///
+/// Lleva también el subconjunto latin-ext porque aquí se imprimen nombres de
+/// personas, que son datos de usuario y pueden traer caracteres fuera del
+/// latino básico.
+@font-face {
+  font-family: 'Manrope Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Manrope Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('@fontsource-variable/manrope/files/manrope-latin-ext-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/// Inter: solo etiquetas e insignias.
+///
+/// Sin latin-ext: Inter no pinta datos del paciente, solo cadenas propias de la
+/// interfaz, todas en español. Su latin-ext pesa 85 kB y no cubriría nada que
+/// vaya a aparecer.
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

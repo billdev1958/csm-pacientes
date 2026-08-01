@@ -1,3 +1,4 @@
+@use 'assets/fonts';
 @use 'assets/abstracts/index' as *;
 // Las dos capas que emiten CSS se cargan aquí y solo aquí; el índice ya no las
 // reenvía para no repetirlas en la hoja de cada componente.
@@ -113,6 +114,7 @@ h3 {
    panel para identificar cada sección. */
 .eyebrow {
   display: block;
+  font-family: $font-family-label;
   font-size: $font-size-xs;
   font-weight: $font-weight-bold;
   letter-spacing: 0.12em;
@@ -257,7 +259,10 @@ h3 {
   align-items: center;
   justify-content: center;
   gap: $spacing-2;
-  font-family: inherit;
+  /* Inter y no la fuente del texto: el sistema de diseño reserva esta familia
+     para lo funcional, y así un botón se distingue del contenido de un vistazo
+     antes incluso de leerlo. */
+  font-family: $font-family-label;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   /* 48px: recomendación de área de toque de Material. */
@@ -387,6 +392,7 @@ h3 {
   gap: $spacing-1;
   padding: $spacing-1 $spacing-3;
   border-radius: $border-radius-full;
+  font-family: $font-family-label;
   font-size: $font-size-xs;
   font-weight: $font-weight-bold;
   letter-spacing: 0.04em;

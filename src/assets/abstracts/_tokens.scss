@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'variables' as *;
 
 // ==========================================================================
@@ -55,6 +56,15 @@ $surface-sunken: #f1f5f9;
   --surface-card: #{$surface-card};
   --surface-raised: #{$surface-raised};
   --surface-sunken: #{$surface-sunken};
+
+  // Tinte del verde de marca al 8% sobre blanco (#eef1ef). Es la superficie de
+  // los bloques que pertenecen a la marca sin gritar: el recuadro de la fecha,
+  // la insignia de conteo. Se calcula y no se escribe a mano para que siga al
+  // primario si algún día cambia.
+  //
+  // $color-primary sobre este tinte da 8.49:1, muy por encima del 4.5:1 de
+  // WCAG 1.4.3 para texto normal.
+  --primary-surface: #{color.mix($color-primary, #ffffff, 8%)};
 
   // Colores de marca, para que un tema pueda ajustarlos sin recompilar
   --color-primary: #{$color-primary};
