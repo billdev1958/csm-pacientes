@@ -43,12 +43,22 @@
 
 /* El logo institucional en el mismo tamaño que la marca de letra que sustituye.
    Se piden 40px con la imagen de 512px de origen, lo que da nitidez de sobra en
-   pantallas de alta densidad, que son la norma en teléfono. */
+   pantallas de alta densidad, que son la norma en teléfono.
+   
+   El archivo es para fondo claro: las letras "CMS" son verde oscuro y el texto
+   casi negro, así que sobre esta barra verde quedaban ilegibles. Se aplica el
+   mismo filtro que el panel usa en su sidebar, que lo vuelve una silueta blanca.
+   
+   Contrapartida: el filtro no distingue colores, así que el caduceo dorado
+   también se vuelve blanco y se pierde ese acento. Un archivo de logo en negativo
+   —con las letras blancas y el caduceo dorado— se vería mejor, pero no existe
+   entre los recursos del proyecto. */
 .brand__logo {
   width: 2.5rem;
   height: 2.5rem;
   object-fit: contain;
   flex-shrink: 0;
+  @include icon-filter-white;
 }
 
 .brand__text {
