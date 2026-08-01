@@ -29,6 +29,9 @@ import { buildQuickDates, toDateInputValue } from './quick-dates';
 /** Cuántos días se ofrecen como atajo antes de mandar al calendario. */
 const QUICK_DATE_COUNT = 5;
 
+/** El backend responde 409 cuando la franja se ocupó antes de confirmar. */
+const HTTP_CONFLICT = 409;
+
 @Component({
   selector: 'app-book-appointment',
   imports: [ReactiveFormsModule, ClockTimePipe, ShiftPicker],
@@ -374,9 +377,18 @@ export class BookAppointment {
           }
           this.notifications.show(response.message ?? 'No se pudo agendar la cita.', 'error');
         },
-        error: (err: { error?: { message?: string } }) => {
+        error: (err: { status?: number; error?: { message?: string } }) => {
           this.isSubmitting.set(false);
           this.notifications.show(err.error?.message ?? 'No se pudo agendar la cita.', 'error');
+
+          // 409: otra persona reservó esa franja entre que se cargó la lista y se
+          // pulsó confirmar. La lista en pantalla ya está desactualizada, así que
+          // se vuelve a buscar; si no, el paciente ve libre lo que no lo está y
+          // reintenta lo mismo una y otra vez.
+          if (err.status === HTTP_CONFLICT) {
+            this.selectedScheduleId.set(null);
+            this.retry.next();
+          }
         },
       });
   }

@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { AppointmentParams, OfficeSchedule } from '../../../core/models/appointment.models';
 import { AppointmentService } from '../../../core/services/appointment.service';
@@ -183,5 +183,65 @@ describe('BookAppointment', () => {
     elegirFranja();
     api().form.controls['shiftID'].setValue('2');
     expect(api().selectedScheduleId()).toBeNull();
+  });
+});
+
+// Caso reproducido con dos cuentas reales contra la API: A reserva una franja y
+// B, que la tenía en pantalla, confirma la misma. El backend responde 409 y la
+// lista de B ya está desactualizada.
+describe('BookAppointment ante una franja que se ocupó', () => {
+  let fixture: ComponentFixture<BookAppointment>;
+  let busquedas: number;
+
+  beforeEach(async () => {
+    busquedas = 0;
+    const servicio = {
+      getParams: () => of(PARAMS),
+      getAvailableSchedules: () => {
+        busquedas += 1;
+        return of(FRANJAS);
+      },
+      createAppointment: () =>
+        throwError(() => ({
+          status: 409,
+          error: { message: 'ese horario acaba de ser reservado; elige otro' },
+        })),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [BookAppointment],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        { provide: AppointmentService, useValue: servicio },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(BookAppointment);
+    fixture.detectChanges();
+  });
+
+  function api() {
+    return fixture.componentInstance as unknown as {
+      form: { patchValue: (v: Record<string, string>) => void };
+      selectedScheduleId: () => number | null;
+      selectSchedule: (s: OfficeSchedule) => void;
+      confirm: () => void;
+    };
+  }
+
+  it('suelta la franja y vuelve a buscar cuando el servidor responde 409', () => {
+    const c = api();
+    c.form.patchValue({ serviceID: '13', shiftID: '1', appointmentDate: '2026-08-03' });
+    const busquedasTrasElegirCombinacion = busquedas;
+    c.selectSchedule(FRANJAS[0]);
+    expect(c.selectedScheduleId()).toBe(FRANJAS[0].id);
+
+    c.confirm();
+
+    // Sin esto el paciente sigue viendo libre lo que ya no lo está y reintenta
+    // la misma franja indefinidamente.
+    expect(c.selectedScheduleId()).toBeNull();
+    expect(busquedas).toBe(busquedasTrasElegirCombinacion + 1);
   });
 });
