@@ -2,6 +2,7 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { merge } from 'rxjs';
 
 import {
   AppointmentParams,
@@ -113,13 +114,27 @@ export class BookAppointment {
       .subscribe(() => this.formVersion.update((v) => v + 1));
 
     // Cambiar servicio, turno o fecha invalida las franjas ya cargadas: dejarlas
-    // en pantalla haría que se reservara una franja de otra combinación.
-    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      if (this.schedules().length > 0) {
-        this.schedules.set([]);
-        this.selectedScheduleId.set(null);
-      }
-    });
+    // en pantalla permitiría reservar una franja de otra combinación.
+    //
+    // Se escuchan SOLO esos tres controles, no el formulario entero. Escuchar
+    // `form.valueChanges` borraba la selección al teclear en "motivo" o
+    // "síntomas", que viven en el mismo grupo: el bloque de confirmación
+    // desaparecía del DOM con el foco dentro y no se podía escribir.
+    //
+    // `beneficiaryID` tampoco entra: cambia para quién es la cita, no qué franjas
+    // existen.
+    merge(
+      this.form.controls.serviceID.valueChanges,
+      this.form.controls.shiftID.valueChanges,
+      this.form.controls.appointmentDate.valueChanges,
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.schedules().length > 0) {
+          this.schedules.set([]);
+          this.selectedScheduleId.set(null);
+        }
+      });
   }
 
   private loadParams(): void {
