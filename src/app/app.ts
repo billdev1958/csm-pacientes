@@ -15,6 +15,9 @@ export class App {
 
   protected readonly isAuthenticated = computed(() => this.auth.isAuthenticated());
 
+  /** Nombre del titular, o null mientras el cliente no lo conozca. */
+  protected readonly displayName = computed(() => this.auth.displayName());
+
   protected logout(): void {
     this.auth.logout();
   }

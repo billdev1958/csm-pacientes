@@ -73,7 +73,10 @@
   font-weight: $font-weight-bold;
 }
 
+/* El subtítulo se calla en teléfono: una vez dentro no aporta, y su sitio lo
+   necesitan el nombre del paciente y el botón de salir. */
 .brand__sub {
+  display: none;
   font-size: $font-size-xs;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -85,13 +88,37 @@
   display: none;
 }
 
-.topbar__logout {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+/* ==========================================================================
+   Zona de cuenta
+   ========================================================================== */
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  min-width: 0;
+}
+
+/* Se recorta en lugar de empujar al botón fuera de la barra. Un nombre largo se
+   corta con puntos suspensivos, pero el lector de pantalla lee el texto entero. */
+.account__name {
+  @include text-truncate;
+  max-width: 7rem;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+/* Píldora translúcida en lugar de la caja con borde de antes: sigue leyéndose
+   como un control, pero no compite con la marca ni con el nombre.
+   Blanco sobre el verde aclarado al 12% da 6.81:1. */
+.account__logout {
+  background-color: rgba(255, 255, 255, 0.12);
+  border: none;
   color: inherit;
-  min-height: 2.75rem;
-  padding: 0 $spacing-4;
-  border-radius: $border-radius-md;
+  /* 48px de área de toque aunque la píldora se vea pequeña. */
+  min-height: 3rem;
+  padding: 0 $spacing-3;
+  border-radius: $border-radius-full;
   cursor: pointer;
   font-family: inherit;
   font-size: $font-size-sm;
@@ -168,6 +195,14 @@
 @include respond-to('md') {
   .topbar {
     padding: $spacing-4 $spacing-6;
+  }
+
+  .brand__sub {
+    display: block;
+  }
+
+  .account__name {
+    max-width: 14rem;
   }
 
   .topnav {

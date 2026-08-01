@@ -34,10 +34,24 @@
         >
       </nav>
 
-      <button type="button" class="topbar__logout" (click)="logout()">
-        <span class="topbar__logout-text">Cerrar sesión</span>
-        <span class="visually-hidden">de tu cuenta</span>
-      </button>
+      <div class="account">
+        <!-- Quién está dentro. Solo aparece cuando se conoce el nombre: el login
+             no lo devuelve y se aprende al entrar a "Agendar". -->
+        @if (displayName(); as name) {
+          <span class="account__name">
+            <span class="visually-hidden">Sesión de</span>
+            {{ name }}
+          </span>
+        }
+
+        <!-- Menos peso que antes: es una acción que casi nunca se usa y ocupaba
+             una caja con borde en la barra del teléfono. El texto visible sigue
+             dentro del nombre accesible, así que un lector de pantalla lo
+             encuentra igual. -->
+        <button type="button" class="account__logout" (click)="logout()">
+          Salir<span class="visually-hidden"> de tu cuenta</span>
+        </button>
+      </div>
     }
   </header>
 
