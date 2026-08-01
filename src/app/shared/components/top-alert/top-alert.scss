@@ -1,4 +1,7 @@
 @use '../../../../assets/abstracts' as *;
+// Angular renombra los @keyframes por componente y también la referencia del
+// `animation:` de abajo, así que la definición tiene que estar en esta hoja.
+@use '../../../../assets/abstracts/animations';
 
 .alert-region {
   position: fixed;

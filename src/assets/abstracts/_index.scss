@@ -1,4 +1,23 @@
+// Solo lo que NO emite CSS: variables de Sass y mixins.
+//
+// Un componente hace `@use '.../abstracts' as *` y cada componente es una
+// compilación independiente, así que todo lo que este índice reenvíe y emita
+// reglas acaba duplicado en la hoja de TODOS los componentes.
+//
+// `_tokens.scss` (el bloque `:root`) y `_animations.scss` (los `@keyframes`)
+// sí emiten, y por eso salen de aquí:
+//
+//   - Los tokens los emite una sola vez `styles.scss`. Dentro de un componente
+//     ni siquiera funcionaban: el encapsulamiento reescribía el selector a
+//     `:root[_ngcontent-…]`, que no puede casar con nada, porque `:root` es el
+//     <html> y ese elemento nunca lleva el atributo de un componente. Era peso
+//     muerto: 1.4 kB en cada hoja.
+//
+//   - Los `@keyframes` los emite `styles.scss` para el uso global, y además los
+//     declara cada componente que anima con un `@use` explícito de
+//     './animations'. Ese `@use` no es opcional: Angular renombra tanto los
+//     `@keyframes` de un componente como la referencia en su `animation:`, así
+//     que la definición tiene que estar en la misma hoja o la animación se
+//     queda sin resolver.
 @forward './variables';
 @forward './mixins';
-@forward './animations';
-@forward './tokens';

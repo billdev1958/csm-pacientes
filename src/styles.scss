@@ -1,4 +1,8 @@
 @use 'assets/abstracts/index' as *;
+// Las dos capas que emiten CSS se cargan aquí y solo aquí; el índice ya no las
+// reenvía para no repetirlas en la hoja de cada componente.
+@use 'assets/abstracts/tokens';
+@use 'assets/abstracts/animations';
 
 /* ==========================================================================
    Estilos globales — Portal de Pacientes
