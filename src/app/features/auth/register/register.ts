@@ -10,7 +10,7 @@ import { NotificationService } from '../../../core/services/notification.service
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
-  styleUrl: '../login/login.scss',
+  styleUrl: './register.scss',
 })
 export class Register {
   private readonly fb = inject(FormBuilder);
@@ -21,6 +21,8 @@ export class Register {
 
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  /** Contraseña a la vista: se escribe una nueva y no hay campo de confirmación. */
+  protected readonly showPassword = signal(false);
 
   /**
    * La CURP se valida con longitud exacta de 18, igual que el backend, para no
@@ -39,6 +41,10 @@ export class Register {
 
   protected control(name: keyof typeof this.form.controls) {
     return this.form.controls[name];
+  }
+
+  protected togglePassword(): void {
+    this.showPassword.update((visible) => !visible);
   }
 
   protected onSubmit(): void {

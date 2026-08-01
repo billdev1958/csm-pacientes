@@ -1,0 +1,104 @@
+@use '../../../assets/abstracts' as *;
+
+/* ==========================================================================
+   Tarjeta de las pantallas de acceso
+   ==========================================================================
+
+   Login y registro comparten marco: la misma tarjeta, el mismo logo y la misma
+   franja institucional. Estaba escrito solo en `login.scss` y `register` lo
+   tomaba prestado apuntando su `styleUrl` a otra carpeta, así que cualquier
+   cambio pensado para una pantalla llegaba a la otra sin avisar y el registro no
+   podía tener estilos propios.
+
+   Ahora es un parcial que las dos usan con `@use`. Cada componente compila su
+   copia, que es lo que permite mantener el encapsulamiento de Angular. */
+
+/* La tarjeta se centra vertical y horizontalmente. En teléfono ocupa el ancho
+   disponible con margen mínimo; desde tableta se limita para que las líneas no
+   queden demasiado largas. */
+.auth {
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-md;
+  padding: $spacing-6 $spacing-5;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Franja institucional superior, el mismo recurso del panel. */
+.auth::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, $color-primary, $color-accent);
+}
+
+/* El logo se centra sobre el título: es lo primero que confirma a la persona que
+   está en el sistema correcto antes de escribir su contraseña. */
+.auth__logo {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+  margin: 0 auto $spacing-5;
+}
+
+.auth__title {
+  font-size: $font-size-xl;
+  margin-bottom: $spacing-2;
+  text-align: center;
+}
+
+.auth__lead {
+  color: var(--text-muted);
+  margin: 0 0 $spacing-6;
+  text-align: center;
+}
+
+.auth__error {
+  margin: 0 0 $spacing-5;
+  padding: $spacing-3 $spacing-4;
+  border-radius: $border-radius-lg;
+  background-color: var(--danger-surface);
+  color: var(--danger-text);
+  border-left: 3px solid var(--danger);
+  font-weight: $font-weight-medium;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-5;
+}
+
+.auth__alt {
+  margin: $spacing-6 0 0;
+  padding-top: $spacing-5;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: $font-size-sm;
+
+  a {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+    /* Área de toque suficiente para un enlace en teléfono. */
+    display: inline-block;
+    padding: $spacing-2;
+  }
+}
+
+@include respond-to('md') {
+  .auth {
+    padding: $spacing-8;
+  }
+
+  .auth__title {
+    font-size: $font-size-2xl;
+  }
+}

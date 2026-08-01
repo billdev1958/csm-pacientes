@@ -9,9 +9,13 @@
   <h1 class="auth__title" id="login-title">Iniciar sesión</h1>
   <p class="auth__lead">Accede para agendar y consultar tus citas.</p>
 
-  @if (errorMessage()) {
-    <p class="auth__error" role="alert">{{ errorMessage() }}</p>
-  }
+  <!-- Región viva persistente, igual que en registro: un `role="alert"` que nace
+       junto con su texto no siempre se anuncia. -->
+  <div role="alert" aria-live="assertive" aria-atomic="true">
+    @if (errorMessage()) {
+      <p class="auth__error">{{ errorMessage() }}</p>
+    }
+  </div>
 
   <form class="auth__form" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="field">
