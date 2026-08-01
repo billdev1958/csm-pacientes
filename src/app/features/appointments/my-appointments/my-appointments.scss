@@ -1,32 +1,28 @@
 @use '../../../../assets/abstracts' as *;
 
-.page__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: $spacing-4;
+.page-head {
   margin-bottom: $spacing-6;
 }
 
-.page__title {
-  font-family: $font-family-heading;
-  font-size: $font-size-2xl;
-  color: $color-primary;
-  margin: 0;
+.page-head__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $spacing-4;
 }
 
-.page__error {
-  padding: $spacing-3 $spacing-4;
-  border-radius: $border-radius-md;
-  background-color: var(--danger-surface);
-  color: var(--danger-text);
-  border-left: 3px solid var(--danger);
+.page-head__title {
+  font-size: $font-size-xl;
 }
 
-.status {
-  margin: 0 0 $spacing-4;
-  color: var(--text-muted);
+/* El botón de agendar solo aparece desde tableta: en teléfono la acción vive en
+   la barra inferior y duplicarla resta espacio a la lista. */
+.page-head__action {
+  display: none;
+}
+
+.notice__text {
+  margin: 0 0 $spacing-3;
 }
 
 .cards {
@@ -37,39 +33,76 @@
   gap: $spacing-4;
 }
 
-.appointment {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: $spacing-4;
-  padding: $spacing-6;
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-subtle);
+/* ==========================================================================
+   Tarjeta de cita
+   ========================================================================== */
+
+.appt {
   border-left: 4px solid $color-primary;
+}
+
+.appt__head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: $spacing-4;
+  margin-bottom: $spacing-4;
+}
+
+/* Bloque de fecha tipo calendario: lo primero que busca alguien al abrir la
+   pantalla es cuándo es su cita. */
+.appt__date {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  padding: $spacing-2 0;
+  margin: 0;
   border-radius: $border-radius-lg;
-  box-shadow: $shadow-sm;
+  background-color: var(--success-surface);
+  line-height: 1.1;
 }
 
-.appointment__service {
+.appt__day {
   font-family: $font-family-heading;
-  font-size: $font-size-lg;
-  color: var(--text-strong);
-  margin: 0 0 $spacing-1;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  font-variant-numeric: tabular-nums;
 }
 
-.appointment__when {
-  margin: 0 0 $spacing-4;
-  color: var(--warning-text);
+.appt__month {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  color: var(--success-strong);
+}
+
+.appt__service {
+  font-size: $font-size-base;
+  margin-bottom: $spacing-1;
+}
+
+.appt__when {
+  margin: 0;
+  font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
+  color: var(--warning-text);
   text-transform: capitalize;
 }
 
-.appointment__meta {
+/* La insignia baja a su propia línea en teléfono para no estrechar el título. */
+.badge {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.appt__meta {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: $spacing-1 $spacing-4;
   margin: 0;
+  padding-top: $spacing-4;
+  border-top: 1px solid var(--border-subtle);
   font-size: $font-size-sm;
 
   dt {
@@ -82,42 +115,39 @@
   }
 }
 
-.empty {
-  padding: $spacing-8;
-  text-align: center;
-  color: var(--text-muted);
-  background-color: var(--surface-card);
-  border: 1px dashed var(--border-strong);
-  border-radius: $border-radius-lg;
+.appt__actions {
+  margin-top: $spacing-5;
 }
+
+/* ==========================================================================
+   Diálogo de cancelación
+   ========================================================================== */
 
 .backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(6px);
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  /* En teléfono la hoja se ancla abajo, donde alcanza el pulgar. */
+  align-items: flex-end;
   justify-content: center;
-  padding: $spacing-4;
+  padding: 0;
   z-index: $z-index-modal-back;
 }
 
 .dialog {
   width: 100%;
-  max-width: 26rem;
   background-color: var(--surface-card);
-  border-radius: $border-radius-lg;
-  padding: $spacing-6;
-  box-shadow: $shadow-lg;
+  border-radius: $border-radius-2xl $border-radius-2xl 0 0;
+  padding: $spacing-6 $spacing-5 calc(#{$spacing-6} + env(safe-area-inset-bottom));
+  box-shadow: $shadow-xl;
   animation: fade-in-up-sm 0.2s ease-out;
 }
 
 .dialog__title {
-  font-family: $font-family-heading;
   font-size: $font-size-lg;
-  color: var(--text-strong);
-  margin: 0 0 $spacing-3;
+  margin-bottom: $spacing-3;
 }
 
 .dialog__desc {
@@ -127,7 +157,70 @@
 
 .dialog__actions {
   display: flex;
-  flex-wrap: wrap;
+  /* Conservar va primero para que la acción irreversible no quede bajo el pulgar
+     por accidente. */
+  flex-direction: column;
   gap: $spacing-3;
-  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   Esqueletos
+   ========================================================================== */
+
+.skeleton--line {
+  height: 1rem;
+  margin-bottom: $spacing-3;
+}
+
+.skeleton--line-sm {
+  width: 35%;
+}
+
+.skeleton--line-lg {
+  height: 1.5rem;
+  width: 70%;
+}
+
+/* ==========================================================================
+   Desde tableta
+   ========================================================================== */
+
+@include respond-to('md') {
+  .page-head__title {
+    font-size: $font-size-2xl;
+  }
+
+  .page-head__action {
+    display: inline-flex;
+  }
+
+  .appt__head {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .badge {
+    grid-column: auto;
+    justify-self: end;
+  }
+
+  .appt__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .backdrop {
+    align-items: center;
+    padding: $spacing-4;
+  }
+
+  .dialog {
+    max-width: 28rem;
+    border-radius: $border-radius-2xl;
+    padding: $spacing-6;
+  }
+
+  .dialog__actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
 }

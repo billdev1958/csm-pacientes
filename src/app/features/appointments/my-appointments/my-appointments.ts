@@ -3,6 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
+import { DialogDirective } from '../../../shared/directives/dialog.directive';
+
 import { Appointment } from '../../../core/models/appointment.models';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -13,7 +15,7 @@ const STATUS_CONCLUIDA = 4;
 
 @Component({
   selector: 'app-my-appointments',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, DialogDirective],
   templateUrl: './my-appointments.html',
   styleUrl: './my-appointments.scss',
 })
@@ -56,6 +58,28 @@ export class MyAppointments {
           this.loadError.set('No se pudieron cargar tus citas.');
         },
       });
+  }
+
+  /** Permite reintentar sin recargar la página cuando la carga falla. */
+  protected reload(): void {
+    this.load();
+  }
+
+  /**
+   * Traduce el estado de la cita al modificador de la insignia. Se mapea por id y
+   * no por el nombre que llega del backend, que es texto libre de la base.
+   */
+  protected statusModifier(appointment: Appointment): string {
+    switch (appointment.statusID) {
+      case 2:
+        return 'confirmed';
+      case STATUS_CONCLUIDA:
+        return 'done';
+      case STATUS_CANCELADA:
+        return 'cancelled';
+      default:
+        return 'pending';
+    }
   }
 
   protected canCancel(appointment: Appointment): boolean {

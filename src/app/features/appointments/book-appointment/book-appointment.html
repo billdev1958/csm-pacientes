@@ -1,24 +1,54 @@
-<h1 class="page__title">Agendar cita</h1>
+<header class="page-head">
+  <span class="eyebrow">Nueva cita</span>
+  <h1 class="page-head__title">Agendar una cita</h1>
+  <p class="page-head__lead">Elige el servicio y el día, y te mostramos los horarios libres.</p>
+</header>
 
-<div class="status-region" role="status" aria-live="polite" aria-atomic="true">
+<!-- Región viva persistente: anuncia los cambios de estado a un lector de
+     pantalla sin depender de que aparezcan las cajas del esqueleto. -->
+<div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
   @if (isLoadingParams()) {
-    <p class="status">Cargando datos…</p>
+    Cargando datos para agendar.
   }
   @if (isLoadingSchedules()) {
-    <p class="status">Buscando horarios disponibles…</p>
+    Buscando horarios disponibles.
+  }
+  @if (!isLoadingSchedules() && schedules().length > 0) {
+    {{ availableSchedules().length }} horarios disponibles de {{ schedules().length }}.
   }
 </div>
 
 @if (loadError()) {
-  <p class="page__error" role="alert">{{ loadError() }}</p>
+  <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+}
+
+@if (isLoadingParams()) {
+  <div class="card" aria-hidden="true">
+    <div class="skeleton skeleton--title"></div>
+    <div class="skeleton skeleton--field"></div>
+    <div class="skeleton skeleton--field"></div>
+  </div>
 }
 
 @if (params(); as data) {
-  <form [formGroup]="form" (ngSubmit)="searchSchedules()">
-    <section class="card" aria-labelledby="step1-title">
-      <h2 class="card__title" id="step1-title">1. ¿Para quién y qué necesitas?</h2>
+  <!-- Indicador de progreso: el paciente ve cuántos pasos hay y en cuál está. -->
+  <ol class="steps" aria-label="Progreso del agendado">
+    <li class="steps__item steps__item--done" aria-current="step">
+      <span class="steps__num">1</span> Servicio y fecha
+    </li>
+    <li class="steps__item" [class.steps__item--done]="schedules().length > 0">
+      <span class="steps__num">2</span> Horario
+    </li>
+    <li class="steps__item" [class.steps__item--done]="selectedScheduleId() !== null">
+      <span class="steps__num">3</span> Confirmar
+    </li>
+  </ol>
 
-      <div class="grid">
+  <form [formGroup]="form" (ngSubmit)="searchSchedules()">
+    <section class="card card--featured step" aria-labelledby="step1-title">
+      <h2 class="step__title" id="step1-title">¿Para quién y qué necesitas?</h2>
+
+      <div class="step__grid">
         <div class="field">
           <label for="book-patient">Paciente</label>
           <select id="book-patient" formControlName="beneficiaryID">
@@ -26,6 +56,12 @@
               <option [value]="option.id">{{ option.label }}</option>
             }
           </select>
+          @if (!hasBeneficiaries()) {
+            <p class="field__hint">
+              Puedes agendar para ti. Si necesitas agendar para un familiar, pide que lo registren
+              como beneficiario en recepción.
+            </p>
+          }
         </div>
 
         <div class="field">
@@ -57,22 +93,39 @@
             [min]="today"
             required
           />
+          <p class="field__hint">No se pueden agendar fechas pasadas.</p>
         </div>
       </div>
 
-      <button type="submit" class="btn btn--primary" [disabled]="isLoadingSchedules()">
-        Buscar horarios
+      <button type="submit" class="btn btn--primary btn--block" [disabled]="isLoadingSchedules()">
+        {{ isLoadingSchedules() ? 'Buscando…' : 'Ver horarios disponibles' }}
       </button>
     </section>
   </form>
 
-  @if (schedules().length > 0) {
-    <section class="card" aria-labelledby="step2-title">
-      <h2 class="card__title" id="step2-title">2. Elige un horario</h2>
+  @if (isLoadingSchedules()) {
+    <section class="card" aria-hidden="true">
+      <div class="skeleton skeleton--title"></div>
+      <div class="slots">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="skeleton skeleton--slot"></div>
+        }
+      </div>
+    </section>
+  }
+
+  @if (!isLoadingSchedules() && schedules().length > 0) {
+    <section class="card step" aria-labelledby="step2-title">
+      <h2 class="step__title" id="step2-title">Elige un horario</h2>
 
       @if (availableSchedules().length === 0) {
-        <p class="empty">Todos los horarios de ese día están ocupados. Prueba con otra fecha.</p>
+        <p class="notice notice--info">
+          Todos los horarios de ese día están ocupados. Prueba con otra fecha o con el otro turno.
+        </p>
       } @else {
+        <p class="step__hint">
+          {{ availableSchedules().length }} de {{ schedules().length }} horarios disponibles.
+        </p>
         <ul class="slots" role="list">
           @for (schedule of schedules(); track schedule.id) {
             <li>
@@ -94,10 +147,10 @@
                 "
                 (click)="selectSchedule(schedule)"
               >
-                <span class="slot__time">{{ schedule.timeStart }} – {{ schedule.timeEnd }}</span>
-                <span class="slot__office">{{ schedule.officeName }}</span>
+                <span class="slot__time">{{ schedule.timeStart }}</span>
+                <span class="slot__meta">{{ schedule.officeName }}</span>
                 @if (schedule.statusID !== 1) {
-                  <span class="slot__tag">No disponible</span>
+                  <span class="slot__tag">Ocupado</span>
                 }
               </button>
             </li>
@@ -107,31 +160,46 @@
     </section>
   }
 
-  @if (selectedScheduleId() !== null) {
-    <section class="card" aria-labelledby="step3-title">
-      <h2 class="card__title" id="step3-title">3. Confirma</h2>
+  @if (selectedSchedule(); as chosen) {
+    <section class="card card--featured step" aria-labelledby="step3-title">
+      <h2 class="step__title" id="step3-title">Confirma tu cita</h2>
 
-      <form [formGroup]="form" (ngSubmit)="confirm()">
+      <!-- Resumen antes de confirmar: el paciente ve exactamente qué va a reservar. -->
+      <dl class="summary">
+        <dt>Paciente</dt>
+        <dd>{{ selectedPatientLabel() }}</dd>
+        <dt>Servicio</dt>
+        <dd>{{ selectedServiceName() }}</dd>
+        <dt>Fecha y hora</dt>
+        <dd>{{ selectedDateLabel() }} · {{ chosen.timeStart }} a {{ chosen.timeEnd }}</dd>
+        <dt>Consultorio</dt>
+        <dd>{{ chosen.officeName }}</dd>
+      </dl>
+
+      <form [formGroup]="form" (ngSubmit)="confirm()" class="step__form">
         <div class="field">
-          <label for="book-reason"
-            >Motivo de la consulta <span class="field__optional">(opcional)</span></label
-          >
+          <label for="book-reason">
+            Motivo de la consulta <span class="field__optional">(opcional)</span>
+          </label>
           <input id="book-reason" type="text" formControlName="reason" maxlength="200" />
         </div>
 
         <div class="field">
-          <label for="book-symptoms"
-            >Síntomas <span class="field__optional">(opcional)</span></label
-          >
+          <label for="book-symptoms">
+            Síntomas <span class="field__optional">(opcional)</span>
+          </label>
           <textarea
             id="book-symptoms"
             formControlName="symptoms"
             rows="3"
             maxlength="500"
           ></textarea>
+          <p class="field__hint">
+            Ayuda al personal a prepararse. No incluyas datos que no quieras compartir.
+          </p>
         </div>
 
-        <button type="submit" class="btn btn--primary" [disabled]="isSubmitting()">
+        <button type="submit" class="btn btn--primary btn--block" [disabled]="isSubmitting()">
           {{ isSubmitting() ? 'Agendando…' : 'Confirmar cita' }}
         </button>
       </form>

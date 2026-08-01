@@ -1,47 +1,99 @@
 @use '../../../../assets/abstracts' as *;
 
-.page__title {
-  font-family: $font-family-heading;
-  font-size: $font-size-2xl;
-  color: $color-primary;
-  margin: 0 0 $spacing-6;
+.page-head {
+  margin-bottom: $spacing-6;
 }
 
-.page__error {
-  padding: $spacing-3 $spacing-4;
-  border-radius: $border-radius-md;
-  background-color: var(--danger-surface);
-  color: var(--danger-text);
-  border-left: 3px solid var(--danger);
+.page-head__title {
+  font-size: $font-size-xl;
+  margin-bottom: $spacing-2;
 }
 
-.status {
-  margin: 0 0 $spacing-4;
+.page-head__lead {
+  margin: 0;
   color: var(--text-muted);
 }
 
-.card {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: $border-radius-lg;
-  padding: $spacing-6;
-  margin-bottom: $spacing-6;
-  box-shadow: $shadow-sm;
-}
+/* ==========================================================================
+   Indicador de pasos
+   ========================================================================== */
 
-.card__title {
-  font-family: $font-family-heading;
-  font-size: $font-size-lg;
-  color: $color-primary;
+.steps {
+  display: flex;
+  gap: $spacing-2;
+  list-style: none;
   margin: 0 0 $spacing-5;
+  padding: 0;
+  /* En pantallas estrechas los tres pasos no caben en una línea legible, así que
+     se desplazan en horizontal en lugar de apretarse. */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.grid {
+.steps__item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-3;
+  border-radius: $border-radius-full;
+  background-color: var(--surface-sunken);
+  color: var(--text-muted);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.steps__item--done {
+  background-color: var(--success-surface);
+  color: var(--success-strong);
+}
+
+.steps__num {
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: $border-radius-full;
+  background-color: var(--surface-card);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+}
+
+/* ==========================================================================
+   Secciones del formulario
+   ========================================================================== */
+
+.step {
+  margin-bottom: $spacing-5;
+}
+
+.step__title {
+  font-size: $font-size-lg;
+  margin-bottom: $spacing-5;
+}
+
+.step__hint {
+  margin: 0 0 $spacing-4;
+  font-size: $font-size-sm;
+  color: var(--text-muted);
+}
+
+.step__grid {
   display: grid;
   gap: $spacing-5;
-  margin-bottom: $spacing-5;
+  margin-bottom: $spacing-6;
   grid-template-columns: 1fr;
 }
+
+.step__form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-5;
+}
+
+/* ==========================================================================
+   Franjas horarias
+   ========================================================================== */
 
 .slots {
   list-style: none;
@@ -49,58 +101,149 @@
   padding: 0;
   display: grid;
   gap: $spacing-3;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  /* En teléfono entran dos por fila con área de toque amplia; la cuadrícula
+     crece sola en pantallas mayores. */
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
 }
 
 .slot {
   width: 100%;
+  min-height: 4.5rem;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   gap: $spacing-1;
   padding: $spacing-3 $spacing-4;
   border: 1px solid var(--border-strong);
-  border-radius: $border-radius-md;
+  border-radius: $border-radius-lg;
   background-color: var(--surface-card);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
 
-  &--selected {
-    border-color: $color-primary;
-    background-color: var(--success-surface);
-  }
+/* El estado elegido se marca con borde, fondo y una marca, no solo con color:
+   quien no distingue el verde necesita otra señal. */
+.slot--selected {
+  border-color: $color-primary;
+  border-width: 2px;
+  background-color: var(--success-surface);
 
-  &:disabled {
-    cursor: not-allowed;
-    background-color: var(--surface-sunken);
-    color: var(--text-muted);
+  &::after {
+    content: '✓ Elegido';
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: var(--success-strong);
   }
+}
+
+/* El gris tenue sobre la superficie hundida da 4.34:1. WCAG 1.4.3 exime a los
+   controles desactivados, pero se usa el tono más oscuro y se refuerza con borde
+   discontinuo y hora tachada para que el estado no dependa solo del color. */
+.slot:disabled {
+  cursor: not-allowed;
+  background-color: var(--surface-sunken);
+  border-style: dashed;
+  color: var(--text-default);
 }
 
 .slot__time {
-  font-weight: $font-weight-semibold;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
   color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
 }
 
-.slot__office {
-  font-size: $font-size-sm;
+.slot:disabled .slot__time {
+  color: var(--text-default);
+  text-decoration: line-through;
+}
+
+.slot__meta {
+  font-size: $font-size-xs;
   color: var(--text-muted);
+  line-height: 1.3;
 }
 
 .slot__tag {
   font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
-.empty {
-  color: var(--text-muted);
-  margin: 0;
+/* ==========================================================================
+   Resumen previo a confirmar
+   ========================================================================== */
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-1;
+  margin: 0 0 $spacing-6;
+  padding: $spacing-4;
+  background-color: var(--surface-sunken);
+  border-radius: $border-radius-lg;
+
+  dt {
+    font-size: $font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0 0 $spacing-3;
+    font-weight: $font-weight-semibold;
+    color: var(--text-strong);
+    text-transform: capitalize;
+  }
 }
 
+/* ==========================================================================
+   Esqueletos de carga
+   ========================================================================== */
+
+.skeleton--title {
+  height: 1.5rem;
+  width: 55%;
+  margin-bottom: $spacing-5;
+}
+
+.skeleton--field {
+  height: 3rem;
+  margin-bottom: $spacing-4;
+}
+
+.skeleton--slot {
+  height: 4.5rem;
+}
+
+/* ==========================================================================
+   Desde tableta
+   ========================================================================== */
+
 @include respond-to('md') {
-  .grid {
+  .page-head__title {
+    font-size: $font-size-2xl;
+  }
+
+  .step__grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .summary {
+    grid-template-columns: auto 1fr;
+    column-gap: $spacing-6;
+    align-items: baseline;
+
+    dd {
+      margin-bottom: $spacing-2;
+    }
   }
 }

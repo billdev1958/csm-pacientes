@@ -1,4 +1,5 @@
 <section class="auth" aria-labelledby="login-title">
+  <span class="eyebrow">Sanatorio</span>
   <h1 class="auth__title" id="login-title">Iniciar sesión</h1>
   <p class="auth__lead">Accede para agendar y consultar tus citas.</p>
 
@@ -41,7 +42,7 @@
       }
     </div>
 
-    <button type="submit" class="btn btn--primary" [disabled]="isSubmitting()">
+    <button type="submit" class="btn btn--primary btn--block" [disabled]="isSubmitting()">
       {{ isSubmitting() ? 'Verificando…' : 'Entrar' }}
     </button>
   </form>

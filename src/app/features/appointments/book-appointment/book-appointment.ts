@@ -32,6 +32,8 @@ export class BookAppointment {
   protected readonly isLoadingSchedules = signal(false);
   protected readonly isSubmitting = signal(false);
   protected readonly loadError = signal<string | null>(null);
+  /** Cambia con cada edición del formulario para refrescar los computed derivados. */
+  private readonly formVersion = signal(0);
 
   /** Titular más beneficiarios: para quién se puede agendar. */
   protected readonly patientOptions = computed(() => {
@@ -52,6 +54,42 @@ export class BookAppointment {
     this.schedules().filter((s) => s.statusID === SCHEDULE_AVAILABLE),
   );
 
+  protected readonly hasBeneficiaries = computed(
+    () => (this.params()?.patients.benefeciaries ?? []).length > 0,
+  );
+
+  /** Franja elegida, para el resumen previo a confirmar. */
+  protected readonly selectedSchedule = computed(() => {
+    const id = this.selectedScheduleId();
+    return id === null ? null : (this.schedules().find((s) => s.id === id) ?? null);
+  });
+
+  protected readonly selectedPatientLabel = computed(() => {
+    this.formVersion();
+    const chosen = this.form.controls.beneficiaryID.value;
+    return this.patientOptions().find((o) => o.id === chosen)?.label ?? '';
+  });
+
+  protected readonly selectedServiceName = computed(() => {
+    this.formVersion();
+    const id = this.form.controls.serviceID.value;
+    return (this.params()?.services ?? []).find((s) => String(s.id) === id)?.name ?? '';
+  });
+
+  /** Fecha elegida en palabras, que se lee mejor que 2026-08-15. */
+  protected readonly selectedDateLabel = computed(() => {
+    this.formVersion();
+    const value = this.form.controls.appointmentDate.value;
+    if (!value) {
+      return '';
+    }
+    return new Date(`${value}T00:00:00`).toLocaleDateString('es-MX', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  });
+
   protected readonly form = this.fb.nonNullable.group({
     /** Cadena vacía significa "para el titular". */
     beneficiaryID: [''],
@@ -67,6 +105,12 @@ export class BookAppointment {
 
   constructor() {
     this.loadParams();
+
+    // Los computed del resumen leen controles del formulario, que no son signals:
+    // este signal se actualiza en cada cambio y los vuelve a disparar.
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.formVersion.update((v) => v + 1));
 
     // Cambiar servicio, turno o fecha invalida las franjas ya cargadas: dejarlas
     // en pantalla haría que se reservara una franja de otra combinación.

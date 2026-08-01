@@ -1,4 +1,4 @@
-@use 'assets/abstracts/index';
+@use 'assets/abstracts/index' as *;
 
 /* ==========================================================================
    Estilos globales — Portal de Pacientes
@@ -9,21 +9,36 @@
    Lo que NO se copió son los estilos de componente del admin, porque este portal
    tiene otras pantallas y arrastrarlos habría traído 7000 líneas inservibles.
 
-   A diferencia del admin, aquí los estilos de cada componente viven en su propio
-   `styleUrl` para aprovechar el encapsulamiento de Angular: en el admin todo
-   quedó global y por eso la pantalla de login descarga la hoja de impresión del
-   historial clínico. */
+   Dos diferencias deliberadas con el panel:
+
+   1. Los estilos de cada componente viven en su propio `styleUrl` y aprovechan el
+      encapsulamiento de Angular. En el panel todo terminó en la hoja global, y
+      por eso su pantalla de login descarga la hoja de impresión del expediente.
+
+   2. Aquí es mobile-first de verdad: se parte del teléfono y se amplía con
+      `respond-to`, que usa `min-width`. El panel tiene 14 media queries escritas
+      a mano con `max-width`, es decir desktop-first. Un paciente entra desde el
+      teléfono; un administrador, desde un escritorio. */
+
+html {
+  /* Evita que iOS agrande el texto al girar el dispositivo. */
+  -webkit-text-size-adjust: 100%;
+}
 
 html,
 body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: index.$font-family-base;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  line-height: 1.55;
   color: var(--text-body);
-  background-color: index.$color-background;
+  background-color: var(--surface-raised);
   min-height: 100vh;
   width: 100%;
+  /* Suaviza el render en pantallas de alta densidad, que son la norma en móvil. */
+  -webkit-font-smoothing: antialiased;
 }
 
 *,
@@ -32,28 +47,120 @@ body {
   box-sizing: inherit;
 }
 
-/* Contenido disponible para lectores de pantalla pero no visible: etiquetas de
-   campos, títulos de tabla y nombres de región que no caben en el diseño. */
+/* Respeta a quien pidió menos animación en su sistema operativo. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Accesibilidad
+   ========================================================================== */
+
+/* Contenido disponible para lectores de pantalla pero no visible. */
 .visually-hidden {
-  @include index.sr-only;
+  @include sr-only;
 }
 
 /* Foco visible para navegación por teclado. Se usa :focus-visible en lugar de
    :focus para que el anillo no aparezca al hacer clic con el ratón. */
 :focus-visible {
-  @include index.focus-ring;
+  @include focus-ring;
 }
 
-/* Formularios y botones. Viven en el ámbito global porque los comparten todas
-   las pantallas; lo específico de cada pantalla va en su propio styleUrl. */
+/* Enlace para saltar directo al contenido, primer elemento tabulable de la
+   página. Solo se ve al recibir el foco. */
+.skip-link {
+  position: absolute;
+  top: $spacing-2;
+  left: $spacing-2;
+  z-index: $z-index-toast;
+  padding: $spacing-3 $spacing-4;
+  background-color: $color-primary;
+  color: var(--surface-card);
+  border-radius: $border-radius-md;
+  font-weight: $font-weight-semibold;
+  transform: translateY(-200%);
+
+  &:focus {
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Tipografía
+   ========================================================================== */
+
+h1,
+h2,
+h3 {
+  font-family: $font-family-heading;
+  color: var(--text-strong);
+  line-height: 1.25;
+  margin: 0;
+}
+
+/* Etiqueta pequeña en mayúsculas sobre un título. Es el mismo recurso que usa el
+   panel para identificar cada sección. */
+.eyebrow {
+  display: block;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $color-accent-dark;
+  margin-bottom: $spacing-2;
+}
+
+/* ==========================================================================
+   Superficies
+   ========================================================================== */
+
+.card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-sm;
+  padding: $spacing-5;
+
+  @include respond-to('md') {
+    padding: $spacing-6;
+  }
+}
+
+/* Tarjeta con la franja dorada superior del panel: se reserva para lo principal
+   de cada pantalla, no para todo, o deja de destacar. */
+.card--featured {
+  position: relative;
+  overflow: hidden;
+  padding-top: calc(#{$spacing-5} + 4px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, $color-primary, $color-accent);
+  }
+}
+
+/* ==========================================================================
+   Formularios
+   ========================================================================== */
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: index.$spacing-2;
+  gap: $spacing-2;
 
   label {
-    font-size: index.$font-size-sm;
-    font-weight: index.$font-weight-semibold;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
     color: var(--text-body);
   }
 
@@ -61,83 +168,247 @@ body {
   select,
   textarea {
     font-family: inherit;
-    font-size: index.$font-size-base;
-    padding: index.$spacing-3;
+    font-size: $font-size-base;
+    /* 48px de alto: el mínimo cómodo para tocar con el pulgar. Escribirlo con
+       min-height y no con height deja crecer al textarea. */
+    min-height: 3rem;
+    padding: $spacing-3;
     border: 1px solid var(--border-strong);
-    border-radius: index.$border-radius-md;
+    border-radius: $border-radius-md;
     background-color: var(--surface-card);
     color: var(--text-strong);
-
-    &[aria-invalid='true'] {
-      border-color: var(--danger);
-    }
-  }
-}
-
-.field__error {
-  margin: 0;
-  font-size: index.$font-size-sm;
-  color: var(--danger-text);
-}
-
-.btn {
-  font-family: inherit;
-  font-size: index.$font-size-base;
-  font-weight: index.$font-weight-semibold;
-  padding: index.$spacing-3 index.$spacing-6;
-  border: none;
-  border-radius: index.$border-radius-md;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    transition: border-color 0.15s ease;
   }
 
-  &--primary {
-    background-color: index.$color-primary;
-    color: var(--surface-card);
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: $color-primary;
   }
 
-  &--ghost {
-    background-color: transparent;
-    color: index.$color-primary;
-    border: 1px solid var(--border-strong);
+  input[aria-invalid='true'],
+  select[aria-invalid='true'],
+  textarea[aria-invalid='true'] {
+    border-color: var(--danger);
   }
 
-  &--danger {
-    background-color: var(--danger-surface);
-    color: var(--danger-text);
-    border: 1px solid var(--danger);
+  textarea {
+    resize: vertical;
   }
 }
 
 .field__hint {
   margin: 0;
-  font-size: index.$font-size-xs;
+  font-size: $font-size-xs;
   color: var(--text-muted);
 }
 
+.field__error {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: var(--danger-text);
+}
+
 .field__optional {
-  font-weight: index.$font-weight-normal;
+  font-weight: $font-weight-normal;
   color: var(--text-muted);
 }
 
 .field--group {
   border: 1px solid var(--border-subtle);
-  border-radius: index.$border-radius-md;
-  padding: index.$spacing-4;
+  border-radius: $border-radius-md;
+  padding: $spacing-4;
 
   legend {
-    font-size: index.$font-size-sm;
-    font-weight: index.$font-weight-semibold;
-    padding: 0 index.$spacing-2;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    padding: 0 $spacing-2;
   }
 }
 
+/* Opción de radio con área de toque completa, no solo el círculo. */
 .field__radio {
   display: flex;
   align-items: center;
-  gap: index.$spacing-2;
-  font-weight: index.$font-weight-normal;
+  gap: $spacing-3;
+  min-height: 2.75rem;
+  font-weight: $font-weight-normal;
+  cursor: pointer;
+
+  input {
+    min-height: auto;
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: $color-primary;
+  }
+}
+
+/* ==========================================================================
+   Botones
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2;
+  font-family: inherit;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  /* 48px: recomendación de área de toque de Material. */
+  min-height: 3rem;
+  padding: $spacing-3 $spacing-6;
+  border: 1px solid transparent;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* En el teléfono los botones de acción ocupan el ancho completo: es más fácil
+     acertarles y evita filas de botones diminutos. */
+  &--block {
+    width: 100%;
+  }
+
+  @include respond-to('sm') {
+    &--block {
+      width: auto;
+    }
+  }
+}
+
+.btn--primary {
+  background-color: $color-primary;
+  color: var(--surface-card);
+  box-shadow: $shadow-sm;
+}
+
+.btn--ghost {
+  background-color: transparent;
+  color: $color-primary;
+  border-color: var(--border-strong);
+}
+
+.btn--danger {
+  background-color: var(--danger-surface);
+  color: var(--danger-text);
+  border-color: var(--danger);
+}
+
+/* ==========================================================================
+   Estados de carga
+   ========================================================================== */
+
+/* Bloque gris que ocupa el sitio del contenido mientras llega. Comunica la forma
+   de lo que viene, a diferencia de un texto "Cargando" que no dice nada del
+   resultado. Lleva aria-hidden en la plantilla: quien usa lector de pantalla
+   recibe el aviso por la región viva, no por estas cajas. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunken) 25%,
+    var(--border-subtle) 37%,
+    var(--surface-sunken) 63%
+  );
+  background-size: 400% 100%;
+  border-radius: $border-radius-md;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0 50%;
+  }
+}
+
+/* ==========================================================================
+   Estados vacíos y de error
+   ========================================================================== */
+
+.notice {
+  padding: $spacing-4;
+  border-radius: $border-radius-lg;
+  border-left: 3px solid transparent;
+}
+
+.notice--error {
+  background-color: var(--danger-surface);
+  color: var(--danger-text);
+  border-left-color: var(--danger);
+}
+
+.notice--info {
+  background-color: var(--warning-surface);
+  color: var(--warning-text);
+  border-left-color: var(--warning);
+}
+
+.empty-state {
+  padding: $spacing-10 $spacing-6;
+  text-align: center;
+  background-color: var(--surface-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: $border-radius-xl;
+}
+
+.empty-state__title {
+  font-size: $font-size-lg;
+  color: var(--text-strong);
+  margin: 0 0 $spacing-2;
+}
+
+.empty-state__text {
+  margin: 0 0 $spacing-6;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Insignias de estado
+   ========================================================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-1;
+  padding: $spacing-1 $spacing-3;
+  border-radius: $border-radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge--pending {
+  background-color: var(--warning-surface-strong);
+  color: var(--warning-text);
+}
+
+.badge--confirmed {
+  background-color: var(--success-surface-strong);
+  color: var(--success-strong);
+}
+
+.badge--cancelled {
+  background-color: var(--danger-surface-strong);
+  color: var(--danger-text);
+}
+
+/* Usa --text-default y no --text-muted: sobre la superficie hundida el gris
+   tenue da 4.34:1, por debajo del 4.5:1 que pide WCAG para texto normal. Una
+   insignia es información, no un control desactivado, así que no está exenta. */
+.badge--done {
+  background-color: var(--surface-sunken);
+  color: var(--text-default);
 }

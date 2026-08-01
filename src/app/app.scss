@@ -6,75 +6,196 @@
   flex-direction: column;
 }
 
-.layout__header {
+/* Deja sitio a la barra inferior para que no tape el final del contenido, y
+   respeta el área segura de los teléfonos con muesca. */
+.layout--with-nav .content {
+  padding-bottom: calc(#{$spacing-16} + env(safe-area-inset-bottom));
+}
+
+/* ==========================================================================
+   Barra superior
+   ========================================================================== */
+
+.topbar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: $spacing-4;
-  padding: $spacing-4 $spacing-6;
+  padding: $spacing-3 $spacing-4;
   background-color: $color-primary;
   color: var(--surface-card);
+  /* Se mantiene visible al desplazar: en el teléfono ancla la marca y el botón
+     de salir sin que haya que subir hasta arriba. */
+  position: sticky;
+  top: 0;
+  z-index: $z-index-sticky;
+  box-shadow: $shadow-base;
 }
 
 .brand {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: $spacing-3;
   text-decoration: none;
   color: inherit;
+  min-height: 2.75rem;
+}
+
+.brand__mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: $border-radius-lg;
+  background-color: $color-accent;
+  color: $color-primary;
+  font-family: $font-family-heading;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-lg;
+  flex-shrink: 0;
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
 .brand__name {
   font-family: $font-family-heading;
-  font-size: $font-size-lg;
+  font-size: $font-size-base;
   font-weight: $font-weight-bold;
 }
 
 .brand__sub {
   font-size: $font-size-xs;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: $color-accent;
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  gap: $spacing-4;
+/* La navegación superior aparece solo desde tableta. */
+.topnav {
+  display: none;
 }
 
-.nav__link {
-  color: inherit;
-  text-decoration: none;
-  padding: $spacing-2 $spacing-3;
-  border-radius: $border-radius-md;
-  font-weight: $font-weight-medium;
-
-  &--active {
-    background-color: rgba(255, 255, 255, 0.15);
-  }
-}
-
-.nav__logout {
+.topbar__logout {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   color: inherit;
-  padding: $spacing-2 $spacing-4;
+  min-height: 2.75rem;
+  padding: 0 $spacing-4;
   border-radius: $border-radius-md;
   cursor: pointer;
   font-family: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
 }
 
-.layout__main {
+/* ==========================================================================
+   Contenido
+   ========================================================================== */
+
+.content {
   flex: 1;
-  padding: $spacing-8 $spacing-6;
-  max-width: 1100px;
   width: 100%;
+  max-width: 60rem;
   margin: 0 auto;
+  padding: $spacing-5 $spacing-4;
+
+  /* El contenedor recibe el foco al usar el enlace de salto, pero no debe
+     mostrar anillo por eso: no es un control. */
+  &:focus {
+    outline: none;
+  }
 }
+
+/* ==========================================================================
+   Barra inferior (solo teléfono)
+   ========================================================================== */
+
+.bottomnav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-index-fixed;
+  display: flex;
+  background-color: var(--surface-card);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -2px 8px rgba(15, 23, 42, 0.06);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottomnav__link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-1;
+  /* 56px: alto cómodo para una barra de pestañas táctil. */
+  min-height: 3.5rem;
+  padding: $spacing-2;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.bottomnav__link--active {
+  color: $color-primary;
+  /* Indicador de posición que no depende solo del color. */
+  box-shadow: inset 0 3px 0 0 $color-primary;
+}
+
+.bottomnav__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ==========================================================================
+   Desde tableta: navegación arriba, sin barra inferior
+   ========================================================================== */
 
 @include respond-to('md') {
-  .layout__main {
-    padding: $spacing-8;
+  .topbar {
+    padding: $spacing-4 $spacing-6;
+  }
+
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    margin-left: auto;
+  }
+
+  .topnav__link {
+    color: inherit;
+    text-decoration: none;
+    padding: $spacing-2 $spacing-4;
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    border-radius: $border-radius-md;
+    font-weight: $font-weight-medium;
+  }
+
+  .topnav__link--active {
+    background-color: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 -2px 0 0 $color-accent;
+  }
+
+  .bottomnav {
+    display: none;
+  }
+
+  .layout--with-nav .content {
+    padding-bottom: $spacing-8;
+  }
+
+  .content {
+    padding: $spacing-8 $spacing-6;
   }
 }

@@ -1,36 +1,88 @@
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
 <app-top-alert />
 
-<div class="layout">
-  <header class="layout__header">
+<div class="layout" [class.layout--with-nav]="isAuthenticated()">
+  <header class="topbar">
     <a class="brand" routerLink="/mis-citas">
-      <span class="brand__name">Sanatorio</span>
-      <span class="brand__sub">Portal de Pacientes</span>
+      <span class="brand__mark" aria-hidden="true">S</span>
+      <span class="brand__text">
+        <span class="brand__name">Sanatorio</span>
+        <span class="brand__sub">Portal de pacientes</span>
+      </span>
     </a>
 
     @if (isAuthenticated()) {
-      <nav class="nav" aria-label="Navegación principal">
+      <!-- Navegación de escritorio. En teléfono se oculta y se usa la barra
+           inferior, que queda al alcance del pulgar. -->
+      <nav class="topnav" aria-label="Navegación principal">
         <a
           routerLink="/mis-citas"
-          routerLinkActive="nav__link--active"
+          routerLinkActive="topnav__link--active"
           ariaCurrentWhenActive="page"
-          class="nav__link"
+          class="topnav__link"
+          >Mis citas</a
         >
-          Mis citas
-        </a>
         <a
           routerLink="/agendar"
-          routerLinkActive="nav__link--active"
+          routerLinkActive="topnav__link--active"
           ariaCurrentWhenActive="page"
-          class="nav__link"
+          class="topnav__link"
+          >Agendar</a
         >
-          Agendar cita
-        </a>
-        <button type="button" class="nav__logout" (click)="logout()">Cerrar sesión</button>
       </nav>
+
+      <button type="button" class="topbar__logout" (click)="logout()">
+        <span class="topbar__logout-text">Cerrar sesión</span>
+        <span class="visually-hidden">de tu cuenta</span>
+      </button>
     }
   </header>
 
-  <main class="layout__main">
+  <main class="content" id="contenido" tabindex="-1">
     <router-outlet />
   </main>
+
+  @if (isAuthenticated()) {
+    <nav class="bottomnav" aria-label="Navegación principal">
+      <a
+        routerLink="/mis-citas"
+        routerLinkActive="bottomnav__link--active"
+        ariaCurrentWhenActive="page"
+        class="bottomnav__link"
+      >
+        <svg
+          class="bottomnav__icon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" />
+        </svg>
+        Mis citas
+      </a>
+      <a
+        routerLink="/agendar"
+        routerLinkActive="bottomnav__link--active"
+        ariaCurrentWhenActive="page"
+        class="bottomnav__link"
+      >
+        <svg
+          class="bottomnav__icon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v8M8 12h8" />
+        </svg>
+        Agendar
+      </a>
+    </nav>
+  }
 </div>
