@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { SILENT_HTTP_ERRORS } from '../interceptors/error.interceptor';
 import { ApiResponse } from '../models/api.models';
 import {
   Appointment,
@@ -34,12 +35,22 @@ export class AppointmentService {
    * Franjas de un día para un servicio y turno.
    *
    * Devuelve todas, no solo las libres: cada una trae `statusID` (1 disponible,
-   * 2 ocupada, 3 bloqueada) para poder mostrar las ocupadas en gris en lugar de
-   * ocultarlas, que es más claro para quien elige.
+   * 2 ocupada, 3 bloqueada), y quien la llama decide qué hacer con las que no se
+   * pueden reservar.
+   *
+   * `silentErrors` marca las peticiones que el paciente no pidió —el refresco de
+   * horarios en segundo plano— para que un fallo suyo no saque una notificación
+   * global cada treinta segundos.
    */
-  getAvailableSchedules(request: AvailableSchedulesRequest): Observable<OfficeSchedule[]> {
+  getAvailableSchedules(
+    request: AvailableSchedulesRequest,
+    options: { silentErrors?: boolean } = {},
+  ): Observable<OfficeSchedule[]> {
+    const context = new HttpContext().set(SILENT_HTTP_ERRORS, options.silentErrors ?? false);
     return this.http
-      .post<ApiResponse<OfficeSchedule[]>>(`${this.baseUrl}/appointment/schedules`, request)
+      .post<ApiResponse<OfficeSchedule[]>>(`${this.baseUrl}/appointment/schedules`, request, {
+        context,
+      })
       .pipe(map((response) => response.data ?? []));
   }
 
