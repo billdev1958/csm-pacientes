@@ -23,6 +23,7 @@ import { AppointmentService } from '../../../core/services/appointment.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ClockTimePipe } from '../../../shared/pipes/clock-time.pipe';
+import { ShiftPicker, toShiftChoices } from '../shift-picker/shift-picker';
 import { buildQuickDates, toDateInputValue } from './quick-dates';
 
 /** Cuántos días se ofrecen como atajo antes de mandar al calendario. */
@@ -30,7 +31,7 @@ const QUICK_DATE_COUNT = 5;
 
 @Component({
   selector: 'app-book-appointment',
-  imports: [ReactiveFormsModule, ClockTimePipe],
+  imports: [ReactiveFormsModule, ClockTimePipe, ShiftPicker],
   templateUrl: './book-appointment.html',
   styleUrl: './book-appointment.scss',
 })
@@ -107,6 +108,9 @@ export class BookAppointment {
     () => (this.params()?.patients.benefeciaries ?? []).length > 0,
   );
 
+  /** Turnos para las dos tarjetas grandes que sustituyen al desplegable. */
+  protected readonly shiftOptions = computed(() => toShiftChoices(this.params()?.shifts ?? []));
+
   /** Franja elegida, para el resumen previo a confirmar. */
   protected readonly selectedSchedule = computed(() => {
     const id = this.selectedScheduleId();
@@ -128,6 +132,12 @@ export class BookAppointment {
   protected readonly selectedDate = computed(() => {
     this.formVersion();
     return this.form.controls.appointmentDate.value;
+  });
+
+  /** Marca visualmente la tarjeta de turno elegida; el radio ya lleva el estado. */
+  protected readonly selectedShift = computed(() => {
+    this.formVersion();
+    return this.form.controls.shiftID.value;
   });
 
   /** Fecha elegida en palabras, que se lee mejor que 2026-08-15. */
@@ -320,6 +330,11 @@ export class BookAppointment {
 
   protected chooseDate(value: string): void {
     this.form.controls.appointmentDate.setValue(value);
+  }
+
+  /** El selector de turno es un hijo presentacional: escribe aquí su elección. */
+  protected chooseShift(value: string): void {
+    this.form.controls.shiftID.setValue(value);
   }
 
   protected selectSchedule(schedule: OfficeSchedule): void {

@@ -2,31 +2,14 @@
 // Angular renombra los @keyframes por componente y también la referencia del
 // `animation:` del diálogo, así que la definición tiene que estar en esta hoja.
 @use '../../../../assets/abstracts/animations';
+// Titular de contexto, compartido con Agendar.
+@use '../../page-hero';
 
 /* ==========================================================================
    Titular de contexto
-   ========================================================================== */
+   ==========================================================================
 
-.hero {
-  margin-bottom: $spacing-8;
-}
-
-.hero__title {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-bold;
-  letter-spacing: -0.02em;
-  margin-bottom: $spacing-3;
-}
-
-/* --text-body sobre el fondo de la página da 9.90:1. Se usa este y no el gris
-   tenue, que ahí se queda en 4.55:1, al filo del mínimo. La jerarquía la marcan
-   el tamaño y el peso, no un texto más claro. */
-.hero__lead {
-  margin: 0;
-  max-width: 34rem;
-  font-size: $font-size-lg;
-  color: var(--text-body);
-}
+   El titular en sí lo comparte con Agendar; aquí solo se le cuelga la acción. */
 
 /* La acción principal como píldora con sombra teñida. No se pinta en teléfono:
    "Agendar" ya está en la barra inferior, siempre visible y bajo el pulgar, y

@@ -1,28 +1,16 @@
 @use '../../../../assets/abstracts' as *;
-
-.page-head {
-  margin-bottom: $spacing-6;
-}
-
-.page-head__title {
-  font-size: $font-size-xl;
-  margin-bottom: $spacing-2;
-}
-
-.page-head__lead {
-  margin: 0;
-  color: var(--text-muted);
-}
+// Titular de contexto, compartido con Mis citas.
+@use '../../page-hero';
 
 /* ==========================================================================
-   Indicador de pasos
+   Pasos
    ========================================================================== */
 
 .steps {
   display: flex;
-  gap: $spacing-2;
+  gap: $spacing-3;
   list-style: none;
-  margin: 0 0 $spacing-5;
+  margin: 0 0 $spacing-8;
   padding: 0;
   /* En pantallas estrechas los tres pasos no caben en una línea legible, así que
      se desplazan en horizontal en lugar de apretarse. */
@@ -34,13 +22,13 @@
   display: flex;
   align-items: center;
   gap: $spacing-2;
-  padding: $spacing-2 $spacing-3;
-  border: 1px solid transparent;
+  padding: $spacing-2 $spacing-4;
   border-radius: $border-radius-full;
   background-color: var(--surface-sunken);
-  color: var(--text-muted);
+  color: var(--text-default);
+  font-family: $font-family-label;
   font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
   white-space: nowrap;
 }
 
@@ -50,84 +38,90 @@
   color: var(--success-strong);
 }
 
-/* El paso actual se marca con borde y peso además del color, porque el color por
-   sí solo no distingue "hecho" de "en curso" para quien no ve el verde.
-   $color-primary sobre --surface-card da 9.66:1. */
+/* El paso actual va en verde sólido. Blanco sobre $color-primary da 9.66:1, y el
+   relleno lo distingue de "hecho" sin depender solo del tono. */
 .steps__item--current {
-  background-color: var(--surface-card);
-  border-color: $color-primary;
-  color: $color-primary;
-  font-weight: $font-weight-bold;
+  background-color: $color-primary;
+  color: var(--surface-card);
+  box-shadow: $shadow-tinted;
 }
 
 .steps__num {
   display: grid;
   place-items: center;
-  width: 1.375rem;
-  height: 1.375rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: $border-radius-full;
   background-color: var(--surface-card);
   font-size: $font-size-xs;
   font-weight: $font-weight-bold;
 }
 
-/* Sobre la píldora blanca del paso actual, un número blanco desaparecería. */
+/* Blanco sobre el verde aclarado al 20%: 6.81:1. */
 .steps__item--current .steps__num {
-  background-color: $color-primary;
+  background-color: rgba(255, 255, 255, 0.2);
   color: var(--surface-card);
 }
 
 /* ==========================================================================
-   Secciones del formulario
+   Tarjetas de la pantalla
    ========================================================================== */
 
-.step {
-  margin-bottom: $spacing-5;
-}
-
-.step__title {
-  font-size: $font-size-lg;
-  margin-bottom: $spacing-5;
-}
-
-.step__hint {
-  margin: $spacing-4 0 0;
-  font-size: $font-size-sm;
-  color: var(--text-muted);
-}
-
-/* Consultorio como contexto de la sección, una sola vez. */
-.step__office {
-  margin: 0 0 $spacing-4;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: var(--text-body);
-}
-
-.step__grid {
+.booking {
   display: grid;
   gap: $spacing-5;
-  grid-template-columns: 1fr;
 }
 
-.step__form {
-  display: flex;
-  flex-direction: column;
+/* Sin esto, la anchura mínima de un elemento de rejilla es la de su contenido, y
+   el `<select>` del paciente —que mide lo que su opción más larga— ensanchaba su
+   columna hasta invertir la proporción 5/7 en escritorio. */
+.booking > * {
+  min-width: 0;
+}
+
+.panel {
+  padding: $spacing-5;
+  background-color: var(--surface-card);
+  border-radius: $border-radius-2xl;
+  box-shadow: $shadow-tinted;
+}
+
+/* Barra de acento en el canto izquierdo: señala cuál es el bloque principal sin
+   añadir otro título ni teñir el fondo. */
+.panel--accent {
+  border-left: 6px solid $color-primary;
+}
+
+.booking + .panel {
+  margin-top: $spacing-5;
+}
+
+.panel__title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-5;
+}
+
+/* Una línea fina entre campos, como en la maqueta: agrupa sin encerrar. */
+.panel__fields {
+  display: grid;
   gap: $spacing-5;
 }
 
-.notice__text {
-  margin: 0 0 $spacing-3;
+.panel__fields > * + * {
+  padding-top: $spacing-5;
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* ==========================================================================
-   Atajos de fecha
+   Fecha
    ========================================================================== */
 
 .quick-dates {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-2;
+  margin-bottom: $spacing-4;
 }
 
 /* --text-body sobre --surface-sunken da 9.45:1; blanco sobre $color-primary,
@@ -140,7 +134,7 @@
   border-radius: $border-radius-full;
   background-color: var(--surface-sunken);
   color: var(--text-body);
-  font-family: inherit;
+  font-family: $font-family-label;
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   text-transform: capitalize;
@@ -158,8 +152,61 @@
 }
 
 /* ==========================================================================
-   Franjas horarias
+   Horarios
    ========================================================================== */
+
+.slots-area {
+  margin-top: $spacing-6;
+  padding-top: $spacing-6;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.slots-area__title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-2;
+}
+
+.slots-area__office {
+  margin: 0 0 $spacing-4;
+  font-size: $font-size-sm;
+  color: var(--text-body);
+}
+
+.slots-area__hint {
+  margin: $spacing-4 0 0;
+  font-size: $font-size-sm;
+  color: var(--text-body);
+}
+
+/* Estado vacío: dice qué falta, sin botón que pulsar, porque la búsqueda salta
+   sola. --text-body sobre la superficie hundida da 9.45:1 y el icono 4.34:1, de
+   sobra para un gráfico. */
+.slots-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-3;
+  min-height: 11rem;
+  margin: 0;
+  padding: $spacing-6;
+  border: 1px dashed var(--border-strong);
+  border-radius: $border-radius-xl;
+  background-color: var(--surface-sunken);
+  color: var(--text-body);
+  text-align: center;
+}
+
+.slots-empty__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  color: var(--text-muted);
+}
 
 .slots {
   list-style: none;
@@ -197,33 +244,38 @@
 .slot--selected {
   border-color: $color-primary;
   border-width: 2px;
-  background-color: var(--success-surface);
+  background-color: var(--primary-surface);
 
   &::after {
     content: '✓ Elegido';
     font-size: $font-size-xs;
     font-weight: $font-weight-bold;
-    color: var(--success-strong);
+    color: $color-primary;
   }
 }
 
 .slot__time {
-  font-size: $font-size-lg;
+  font-size: $font-size-base;
   font-weight: $font-weight-bold;
   color: var(--text-strong);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* Solo aparece si la búsqueda devolvió franjas de varios consultorios; con uno
    solo, el nombre va una vez en la cabecera de la sección. */
 .slot__meta {
   font-size: $font-size-xs;
-  color: var(--text-muted);
+  color: var(--text-body);
   line-height: 1.3;
 }
 
+.notice__text {
+  margin: 0 0 $spacing-3;
+}
+
 /* ==========================================================================
-   Resumen previo a confirmar
+   Confirmación
    ========================================================================== */
 
 .summary {
@@ -233,21 +285,37 @@
   margin: 0 0 $spacing-6;
   padding: $spacing-4;
   background-color: var(--surface-sunken);
-  border-radius: $border-radius-lg;
+  border-radius: $border-radius-xl;
 
   dt {
+    font-family: $font-family-label;
     font-size: $font-size-xs;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--text-muted);
+    color: var(--text-default);
   }
 
   dd {
     margin: 0 0 $spacing-3;
     font-weight: $font-weight-semibold;
     color: var(--text-strong);
-    text-transform: capitalize;
   }
+}
+
+.confirm__form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-5;
+}
+
+.confirm__arrow {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ==========================================================================
@@ -274,17 +342,12 @@
    ========================================================================== */
 
 @include respond-to('md') {
-  .page-head__title {
-    font-size: $font-size-2xl;
+  .panel {
+    padding: $spacing-6;
   }
 
-  .step__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  /* La fecha lleva los atajos debajo, así que ocupa la fila entera. */
-  .field--date {
-    grid-column: 1 / -1;
+  .panel__title {
+    font-size: $font-size-xl;
   }
 
   .summary {
@@ -295,5 +358,25 @@
     dd {
       margin-bottom: $spacing-2;
     }
+  }
+}
+
+/* ==========================================================================
+   Desde escritorio: dos columnas
+   ==========================================================================
+
+   Las dos columnas son una mejora de escritorio. Hasta aquí todo va apilado, que
+   además es el orden en que se rellena: para quién, qué servicio, qué turno, qué
+   día y por último a qué hora. */
+
+@include respond-to('lg') {
+  .booking {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+    gap: $spacing-6;
+  }
+
+  .booking + .panel {
+    margin-top: $spacing-8;
   }
 }

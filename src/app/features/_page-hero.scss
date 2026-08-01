@@ -1,0 +1,43 @@
+@use '../../assets/abstracts' as *;
+
+/* ==========================================================================
+   Cabecera de pantalla
+   ==========================================================================
+
+   Titular grande de contexto con su párrafo de apoyo. Lo comparten Mis citas y
+   Agendar, así que vive en un parcial en vez de estar escrito dos veces; cada
+   componente compila su copia y conserva el encapsulamiento de Angular.
+
+   Quien lo use puede añadir lo suyo encima: Mis citas convierte `.hero` en una
+   rejilla de dos columnas para colgar su píldora de acción. */
+
+.hero {
+  margin-bottom: $spacing-8;
+}
+
+.hero__title {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  letter-spacing: -0.02em;
+  margin-bottom: $spacing-3;
+}
+
+/* --text-body sobre el fondo de la página da 9.90:1. Se usa este y no el gris
+   tenue, que ahí se queda en 4.55:1, al filo del mínimo. La jerarquía la marcan
+   el tamaño y el peso, no un texto más claro. */
+.hero__lead {
+  margin: 0;
+  max-width: 34rem;
+  font-size: $font-size-lg;
+  color: var(--text-body);
+}
+
+@include respond-to('md') {
+  .hero {
+    margin-bottom: $spacing-12;
+  }
+
+  .hero__title {
+    font-size: $font-size-4xl;
+  }
+}

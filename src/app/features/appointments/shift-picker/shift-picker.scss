@@ -1,0 +1,91 @@
+@use '../../../../assets/abstracts' as *;
+
+/* Un `fieldset` trae borde y relleno propios; aquí solo se quiere la agrupación
+   semántica, que es lo que anuncia un lector de pantalla. */
+.shifts {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.shifts__legend {
+  padding: 0;
+  margin-bottom: $spacing-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--text-body);
+}
+
+.shifts__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-3;
+}
+
+/* El radio va oculto pero sigue existiendo y recibiendo foco: la tarjeta entera
+   es su etiqueta. */
+.shift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2;
+  /* 96px de alto: el objetivo amplio es lo que gana esto frente al <select>. */
+  min-height: 6rem;
+  padding: $spacing-4 $spacing-2;
+  border: 1px solid var(--border-strong);
+  border-radius: $border-radius-xl;
+  background-color: var(--surface-card);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+/* `:has(:focus-visible)` y no `:focus-within`: el anillo debe salir al llegar con
+   el teclado, no al hacer clic con el ratón, que es la convención que ya sigue el
+   resto de la aplicación. El radio real está oculto, así que el foco hay que
+   pintarlo en la tarjeta que lo envuelve. */
+.shift:has(:focus-visible) {
+  @include focus-ring;
+}
+
+/* Elegido: fondo, borde de 2px y texto en verde. El grosor del borde es una señal
+   que no depende del color. $color-primary sobre --primary-surface da 8.49:1. */
+.shift--selected {
+  background-color: var(--primary-surface);
+  border: 2px solid $color-primary;
+}
+
+.shift__name {
+  font-family: $font-family-label;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--text-strong);
+}
+
+.shift--selected .shift__name {
+  color: $color-primary;
+}
+
+.shift__icon {
+  width: 2rem;
+  height: 2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Los iconos son contenido no textual: mínimo 3:1. El dorado institucional da
+   5.00:1 sobre blanco y 4.39:1 sobre el tinte verde; el verde, 9.66:1 y 8.49:1. */
+.shift__icon--morning {
+  color: $color-secondary-dark;
+}
+
+.shift__icon--afternoon {
+  color: $color-primary;
+}
