@@ -55,8 +55,9 @@
 
 .field__control input {
   width: 100%;
-  /* Deja hueco al botón para que el texto no pase por debajo. */
-  padding-right: 4.5rem;
+  /* Deja hueco al botón para que la contraseña no pase por debajo. La medida da
+     para la palabra más larga de las dos, "Ocultar". */
+  padding-right: 5.5rem;
 }
 
 /* $color-primary sobre --surface-card da 9.66:1. */
