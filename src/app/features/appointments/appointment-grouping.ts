@@ -35,6 +35,15 @@ export interface GroupedAppointments {
 const MS_PER_DAY = 86_400_000;
 
 /**
+ * "1 cita", "3 citas": la insignia de conteo que acompaña al título de cada
+ * grupo. Es un número y no una barra de progreso: decir cuántas hay es un dato
+ * honesto, mientras que una barra promete avance hacia algo que aquí no existe.
+ */
+export function appointmentCountLabel(count: number): string {
+  return count === 1 ? '1 cita' : `${count} citas`;
+}
+
+/**
  * Días de calendario entre dos instantes, contados de medianoche a medianoche.
  *
  * No son periodos de 24 horas: una cita mañana a las 08:00 vista hoy a las 20:00

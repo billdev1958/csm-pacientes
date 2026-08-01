@@ -1,46 +1,82 @@
 @let appt = appointment();
 
-<div class="appt__head">
+<div class="appt__body">
+  <!-- Bloque de fecha cuadrado: el mes arriba en pequeño y el día grande, que es
+       el dato con el que se localiza una cita de un vistazo. -->
   <p class="appt__date">
-    <span class="appt__day">{{ appt.timeStart | date: 'd' : '' : 'es-MX' }}</span>
-    <span class="appt__month">{{ appt.timeStart | date: 'MMM' : '' : 'es-MX' }}</span>
+    <span class="appt__month">{{ monthShort() }}</span>
+    <span class="appt__day">{{ dayNumber() }}</span>
   </p>
 
-  <div class="appt__headings">
-    <h3 class="appt__service">{{ appt.serviceName }}</h3>
-    <!-- 12 h y no "09:00 h": el formato administrativo obliga a traducir la hora
-         mentalmente y se presta a confundir la mañana con la tarde. -->
-    <p class="appt__when">{{ appt.timeStart | date: 'EEEE, h:mm a' : '' : 'es-MX' }}</p>
-  </div>
+  <div class="appt__main">
+    <div class="appt__heading">
+      <h3 class="appt__service">{{ appt.serviceName }}</h3>
+      @if (countdown()) {
+        <span class="appt__countdown">{{ countdown() }}</span>
+      }
+      @if (appt.statusName) {
+        <span class="badge" [class]="'badge--' + badgeModifier()">{{ appt.statusName }}</span>
+      }
+    </div>
 
-  <div class="appt__tags">
-    @if (countdown()) {
-      <span class="appt__countdown">{{ countdown() }}</span>
-    }
-    @if (appt.statusName) {
-      <span class="badge" [class]="'badge--' + badgeModifier()">{{ appt.statusName }}</span>
-    }
+    <!-- Sigue siendo una lista de definiciones: el icono es la etiqueta visible y
+         el `dt` oculto es la que se lee en voz alta. -->
+    <dl class="appt__meta">
+      @for (row of metaRows(); track row.label) {
+        <div class="appt__row">
+          <dt class="appt__row-label">
+            @switch (row.icon) {
+              @case ('clock') {
+                <svg class="appt__icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+              }
+              @case ('patient') {
+                <svg class="appt__icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
+                </svg>
+              }
+              @case ('doctor') {
+                <svg class="appt__icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M6 3v5a4 4 0 0 0 8 0V3" />
+                  <path d="M10 12v3a4 4 0 0 0 8 0v-1" />
+                  <circle cx="18" cy="10" r="2" />
+                </svg>
+              }
+              @case ('room') {
+                <svg class="appt__icon" aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M5 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+                  <path d="M3 21h18" />
+                  <circle cx="13.5" cy="12.5" r="1" />
+                </svg>
+              }
+            }
+            <span class="visually-hidden">{{ row.label }}</span>
+          </dt>
+          <dd class="appt__row-value">{{ row.value }}</dd>
+        </div>
+      }
+    </dl>
   </div>
 </div>
 
-<dl class="appt__meta">
-  <dt>Paciente</dt>
-  <dd>{{ appt.fullName }}</dd>
-  <dt>Consultorio</dt>
-  <dd>{{ appt.officeName }}</dd>
-  <dt>Médico</dt>
-  <dd>{{ appt.doctorName }}</dd>
-</dl>
-
 @if (canCancel()) {
+  <!-- Separada por una línea y alineada a la derecha: es una salida, no la
+       acción que se viene a hacer, y ya pide confirmación en un diálogo. -->
   <div class="appt__actions">
     <button
       type="button"
-      class="btn btn--danger btn--block"
+      class="appt__cancel"
       [disabled]="cancelling()"
       [attr.aria-label]="'Cancelar la cita de ' + appt.serviceName + ' de ' + appt.fullName"
       (click)="cancelRequested.emit(appt)"
     >
+      <svg class="appt__icon" aria-hidden="true" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M15 9l-6 6M9 9l6 6" />
+      </svg>
       Cancelar cita
     </button>
   </div>

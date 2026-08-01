@@ -1,135 +1,261 @@
 @use '../../../../assets/abstracts' as *;
 
-/* El anfitrión lleva las clases `appt card`, así que aquí solo hace falta darle
-   comportamiento de bloque: un componente sin estilo es inline y rompería la
-   cuadrícula de la lista. */
+/* ==========================================================================
+   Tarjeta de cita
+   ==========================================================================
+
+   Tres tonos, según dónde está la cita:
+
+     next     la más cercana. Blanca y algo más levantada.
+     default  el resto de las próximas. Blanca.
+     muted    el historial. Capa tonal hundida, sin sombra.
+
+   El hundido del historial se consigue con la superficie, nunca bajando la
+   opacidad del texto: sobre --surface-sunken el cuerpo mantiene 9.45:1 y los
+   titulares 16.30:1. */
+
 :host {
   display: block;
-  /* Gris por defecto; la cita más cercana lo cambia a verde. */
-  border-left: 4px solid var(--border-strong);
+  padding: $spacing-5;
+  background-color: var(--surface-card);
+  border-radius: $border-radius-2xl;
+  /* Sombra teñida de verde en lugar de negra: la tarjeta se apoya sobre la
+     página en vez de recortarse contra ella. */
+  box-shadow: $shadow-tinted;
 }
 
 :host(.appt--next) {
-  border-left-color: $color-primary;
-  box-shadow: $shadow-md;
+  box-shadow: $shadow-tinted-strong;
 }
 
-.appt__head {
+/* Sin sombra, con superficie más apagada y un filo de borde. La diferencia entre
+   la superficie hundida y el fondo de la página es de solo 1.05:1, así que es la
+   suma de las tres cosas —y no el tono por sí solo— lo que hace que estas
+   tarjetas se lean como material de consulta. */
+:host(.appt--muted) {
+  background-color: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  box-shadow: none;
+}
+
+.appt__body {
   display: grid;
   grid-template-columns: auto 1fr;
-  align-items: center;
   gap: $spacing-4;
-  margin-bottom: $spacing-4;
+  align-items: start;
 }
 
-/* Bloque de fecha tipo calendario: lo primero que busca alguien al abrir la
-   pantalla es cuándo es su cita. */
+/* ==========================================================================
+   Bloque de fecha
+   ========================================================================== */
+
 .appt__date {
   display: grid;
-  place-items: center;
-  width: 3.25rem;
-  padding: $spacing-2 0;
+  place-content: center;
+  justify-items: center;
+  width: 4.5rem;
+  aspect-ratio: 1;
   margin: 0;
-  border-radius: $border-radius-lg;
-  background-color: var(--success-surface);
-  line-height: 1.1;
+  border-radius: $border-radius-2xl;
+  /* Verde de marca al 8%; $color-primary encima da 8.49:1. */
+  background-color: var(--primary-surface);
+  line-height: 1;
+}
+
+:host(.appt--muted) .appt__date {
+  background-color: var(--surface-card);
+}
+
+.appt__month {
+  font-family: $font-family-label;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $color-primary;
 }
 
 .appt__day {
-  font-family: $font-family-heading;
-  font-size: $font-size-xl;
+  font-size: $font-size-2xl;
   font-weight: $font-weight-bold;
   color: $color-primary;
   font-variant-numeric: tabular-nums;
 }
 
-.appt__month {
-  font-size: $font-size-xs;
-  font-weight: $font-weight-bold;
-  text-transform: uppercase;
-  color: var(--success-strong);
+:host(.appt--muted) .appt__month,
+:host(.appt--muted) .appt__day {
+  /* 7.58:1 sobre blanco. */
+  color: var(--text-default);
 }
 
-.appt__service {
-  font-size: $font-size-base;
-  margin-bottom: $spacing-1;
-}
+/* ==========================================================================
+   Título, cuenta atrás e insignia
+   ========================================================================== */
 
-.appt__when {
-  margin: 0;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: var(--warning-text);
-  text-transform: capitalize;
-}
-
-/* Las etiquetas bajan a su propia línea en teléfono para no estrechar el título. */
-.appt__tags {
-  grid-column: 1 / -1;
+.appt__heading {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: $spacing-2;
+  margin-bottom: $spacing-4;
 }
 
-/* Cuánto falta, que es la pregunta con la que se abre esta pantalla. Comparte
-   forma de píldora con la insignia de estado, pero no su color: una dice cuándo
-   y la otra en qué situación está.
+.appt__service {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin: 0;
+}
 
-   Contraste calculado: --text-default #475569 sobre --surface-sunken #f1f5f9 da
-   6.91:1, y $color-primary #284c34 sobre --success-surface #ecfdf5 da 9.17:1.
-   Ambos por encima del 4.5:1 de WCAG 1.4.3 para texto normal. */
+/* Píldora con la respuesta a "cuánto falta". Comparte forma con la insignia de
+   estado pero no color: una dice cuándo y la otra en qué situación está.
+   --text-default sobre --surface-sunken da 6.91:1; $color-primary sobre
+   --primary-surface, 8.49:1. */
 .appt__countdown {
   padding: $spacing-1 $spacing-3;
   border-radius: $border-radius-full;
   background-color: var(--surface-sunken);
   color: var(--text-default);
+  font-family: $font-family-label;
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   white-space: nowrap;
 }
 
 :host(.appt--next) .appt__countdown {
-  background-color: var(--success-surface);
+  background-color: var(--primary-surface);
   color: $color-primary;
   font-weight: $font-weight-bold;
 }
 
+:host(.appt--muted) .appt__countdown {
+  background-color: var(--surface-card);
+}
+
+/* ==========================================================================
+   Filas de datos con icono
+   ========================================================================== */
+
 .appt__meta {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: $spacing-1 $spacing-4;
+  gap: $spacing-3;
   margin: 0;
-  padding-top: $spacing-4;
-  border-top: 1px solid var(--border-subtle);
-  font-size: $font-size-sm;
-
-  dt {
-    color: var(--text-muted);
-  }
-
-  dd {
-    margin: 0;
-    color: var(--text-body);
-  }
 }
+
+.appt__row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+}
+
+.appt__row-label {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.appt__row-value {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: var(--text-body);
+}
+
+/* Los iconos son contenido no textual: el mínimo son 3:1. El verde da 9.66:1 y
+   el gris tenue del historial 4.34:1, los dos de sobra. */
+.appt__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: $color-primary;
+}
+
+:host(.appt--muted) .appt__icon {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Cancelar
+   ========================================================================== */
 
 .appt__actions {
+  display: flex;
+  justify-content: flex-end;
   margin-top: $spacing-5;
+  padding-top: $spacing-4;
+  border-top: 1px solid var(--border-subtle);
 }
 
+/* Discreta pero inequívocamente un control: lleva borde en reposo, porque en una
+   pantalla táctil no hay hover que lo revele. --text-body sobre blanco da
+   10.35:1 y --danger-text 6.39:1. */
+.appt__cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  min-height: 3rem;
+  padding: 0 $spacing-5;
+  border: 1px solid var(--border-strong);
+  border-radius: $border-radius-full;
+  background: none;
+  color: var(--text-body);
+  font-family: $font-family-label;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.appt__cancel .appt__icon {
+  color: inherit;
+}
+
+.appt__cancel:hover:not(:disabled),
+.appt__cancel:focus-visible {
+  background-color: var(--danger-surface);
+  border-color: var(--danger);
+  color: var(--danger-text);
+}
+
+/* ==========================================================================
+   Desde tableta
+   ========================================================================== */
+
 @include respond-to('md') {
-  .appt__head {
-    grid-template-columns: auto 1fr auto;
+  :host {
+    padding: $spacing-6;
   }
 
-  .appt__tags {
-    grid-column: auto;
-    justify-content: flex-end;
+  .appt__body {
+    gap: $spacing-6;
   }
 
-  .appt__actions {
-    display: flex;
-    justify-content: flex-end;
+  .appt__date {
+    width: 5.5rem;
+  }
+
+  .appt__day {
+    font-size: $font-size-3xl;
+  }
+
+  .appt__service {
+    font-size: $font-size-xl;
+  }
+
+  /* Con sitio de sobra, los cuatro datos caben en dos columnas y la tarjeta deja
+     de ser una columna larga. */
+  .appt__meta {
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-3 $spacing-6;
   }
 }

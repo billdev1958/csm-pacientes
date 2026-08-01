@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 
 import { DialogDirective } from '../../../shared/directives/dialog.directive';
 import { AppointmentCard } from '../appointment-card/appointment-card';
-import { groupAppointments } from '../appointment-grouping';
+import { appointmentCountLabel, groupAppointments } from '../appointment-grouping';
 
 import { Appointment, AppointmentStatus } from '../../../core/models/appointment.models';
 import { AppointmentService } from '../../../core/services/appointment.service';
@@ -56,6 +56,10 @@ export class MyAppointments {
 
   /** Concluidas, canceladas y pasadas, de la más reciente a la más antigua. */
   protected readonly history = computed(() => this.grouped().history);
+
+  /** Insignias de conteo junto al título de cada grupo. */
+  protected readonly upcomingCount = computed(() => appointmentCountLabel(this.upcoming().length));
+  protected readonly historyCount = computed(() => appointmentCountLabel(this.history().length));
 
   protected readonly hasAppointments = computed(() => this.list().length > 0);
 

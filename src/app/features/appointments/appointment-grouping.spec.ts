@@ -1,5 +1,10 @@
 import { Appointment } from '../../core/models/appointment.models';
-import { calendarDaysBetween, countdownLabel, groupAppointments } from './appointment-grouping';
+import {
+  appointmentCountLabel,
+  calendarDaysBetween,
+  countdownLabel,
+  groupAppointments,
+} from './appointment-grouping';
 
 /** Cita mínima: solo importan aquí la fecha y el estado. */
 function cita(id: string, timeStart: string, statusID: number, timeEnd?: string): Appointment {
@@ -65,6 +70,19 @@ describe('countdownLabel', () => {
   it('cuenta los días a partir del segundo', () => {
     expect(countdownLabel(5)).toBe('En 5 días');
     expect(countdownLabel(-5)).toBe('Hace 5 días');
+  });
+});
+
+describe('appointmentCountLabel', () => {
+  it('concuerda el singular y el plural', () => {
+    expect(appointmentCountLabel(1)).toBe('1 cita');
+    expect(appointmentCountLabel(3)).toBe('3 citas');
+  });
+
+  // La insignia solo se pinta cuando el grupo tiene contenido, pero el cero no
+  // debe producir "0 cita".
+  it('trata el cero como plural', () => {
+    expect(appointmentCountLabel(0)).toBe('0 citas');
   });
 });
 

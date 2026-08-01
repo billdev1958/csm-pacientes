@@ -1,13 +1,18 @@
-<header class="page-head">
-  <div class="page-head__row">
-    <div>
-      <span class="eyebrow">Tus citas</span>
-      <h1 class="page-head__title">Mis citas</h1>
-    </div>
-    <!-- En escritorio el acceso a agendar está aquí; en teléfono está en la barra
-         inferior, así que se oculta para no duplicarlo. -->
-    <a routerLink="/agendar" class="btn btn--primary page-head__action">Agendar cita</a>
-  </div>
+<!-- Titular de contexto con su párrafo de apoyo y la acción principal como
+     píldora. En teléfono la píldora no se pinta: "Agendar" ya vive en la barra
+     inferior, siempre visible y al alcance del pulgar, y repetirla aquí gastaría
+     el poco alto que tiene la lista. -->
+<header class="hero">
+  <h1 class="hero__title">Mis citas</h1>
+  <p class="hero__lead">
+    Organiza tus próximas consultas médicas y revisa tu historial de manera sencilla y clara.
+  </p>
+  <a routerLink="/agendar" class="hero__cta">
+    <svg class="hero__icon" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+    Agendar nueva cita
+  </a>
 </header>
 
 <!-- Región viva persistente: está en el DOM desde el primer render, antes de que
@@ -18,7 +23,7 @@
     Cargando tus citas.
   }
   @if (!isLoading() && !loadError()) {
-    {{ upcoming().length }} citas próximas y {{ history().length }} en el historial.
+    {{ upcoming().length }} citas próximas y {{ history().length }} anteriores.
   }
 </div>
 
@@ -32,10 +37,13 @@
 @if (isLoading()) {
   <div class="cards" aria-hidden="true">
     @for (i of [1, 2]; track i) {
-      <div class="card">
-        <div class="skeleton skeleton--line skeleton--line-sm"></div>
-        <div class="skeleton skeleton--line skeleton--line-lg"></div>
-        <div class="skeleton skeleton--line"></div>
+      <div class="card-skeleton">
+        <div class="skeleton skeleton--date"></div>
+        <div class="card-skeleton__lines">
+          <div class="skeleton skeleton--line skeleton--line-lg"></div>
+          <div class="skeleton skeleton--line"></div>
+          <div class="skeleton skeleton--line skeleton--line-sm"></div>
+        </div>
       </div>
     }
   </div>
@@ -47,7 +55,10 @@
          viene a mirar, y antes quedaba enterrada al final de una lista única. -->
     @if (upcoming().length > 0) {
       <section class="group" aria-labelledby="upcoming-title">
-        <h2 class="group__title" id="upcoming-title">Próximas</h2>
+        <div class="group__head">
+          <h2 class="group__title" id="upcoming-title">Próximas visitas</h2>
+          <span class="group__count">{{ upcomingCount() }}</span>
+        </div>
         <ul class="cards" role="list">
           @for (entry of upcoming(); track entry.appointment.appointmentID; let first = $first) {
             <li>
@@ -57,7 +68,7 @@
                 [badgeModifier]="statusModifier(entry.appointment)"
                 [canCancel]="canCancel(entry.appointment)"
                 [cancelling]="cancellingId() === entry.appointment.appointmentID"
-                [featured]="first"
+                [tone]="first ? 'next' : 'default'"
                 (cancelRequested)="askCancel($event)"
               />
             </li>
@@ -67,18 +78,21 @@
     } @else {
       <!-- Hay historial pero nada por delante: sin esto la pantalla es un archivo
            muerto y no ofrece la única acción que queda por hacer. -->
-      <section class="empty-state" aria-labelledby="nothing-next-title">
-        <h2 class="empty-state__title" id="nothing-next-title">No tienes citas próximas</h2>
-        <p class="empty-state__text">Tus citas anteriores siguen abajo, en el historial.</p>
+      <section class="nothing-next" aria-labelledby="nothing-next-title">
+        <h2 class="nothing-next__title" id="nothing-next-title">No tienes citas próximas</h2>
+        <p class="nothing-next__text">Tus visitas anteriores siguen abajo.</p>
         <a routerLink="/agendar" class="btn btn--primary">Agendar una cita</a>
       </section>
     }
 
     @if (history().length > 0) {
-      <!-- Historial descendente: lo más reciente arriba, que es lo que se
-           consulta; lo de hace meses no tiene por qué abrir la sección. -->
+      <!-- Historial descendente y con capa tonal: lo más reciente arriba, y el
+           conjunto hundido para que se lea como material de consulta. -->
       <section class="group group--history" aria-labelledby="history-title">
-        <h2 class="group__title" id="history-title">Historial</h2>
+        <div class="group__head">
+          <h2 class="group__title" id="history-title">Visitas anteriores</h2>
+          <span class="group__count">{{ historyCount() }}</span>
+        </div>
         <ul class="cards" role="list">
           @for (entry of history(); track entry.appointment.appointmentID) {
             <li>
@@ -88,6 +102,7 @@
                 [badgeModifier]="statusModifier(entry.appointment)"
                 [canCancel]="canCancel(entry.appointment)"
                 [cancelling]="cancellingId() === entry.appointment.appointmentID"
+                tone="muted"
                 (cancelRequested)="askCancel($event)"
               />
             </li>
@@ -96,9 +111,9 @@
       </section>
     }
   } @else {
-    <div class="empty-state">
-      <h2 class="empty-state__title">Todavía no tienes citas</h2>
-      <p class="empty-state__text">
+    <div class="nothing-next">
+      <h2 class="nothing-next__title">Todavía no tienes citas</h2>
+      <p class="nothing-next__text">
         Cuando agendes una cita aparecerá aquí con su fecha, consultorio y médico.
       </p>
       <a routerLink="/agendar" class="btn btn--primary">Agendar mi primera cita</a>

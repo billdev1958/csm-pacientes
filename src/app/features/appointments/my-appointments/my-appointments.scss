@@ -3,29 +3,64 @@
 // `animation:` del diálogo, así que la definición tiene que estar en esta hoja.
 @use '../../../../assets/abstracts/animations';
 
-.page-head {
-  margin-bottom: $spacing-6;
+/* ==========================================================================
+   Titular de contexto
+   ========================================================================== */
+
+.hero {
+  margin-bottom: $spacing-8;
 }
 
-.page-head__row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: $spacing-4;
+.hero__title {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  letter-spacing: -0.02em;
+  margin-bottom: $spacing-3;
 }
 
-.page-head__title {
-  font-size: $font-size-xl;
+/* --text-body sobre el fondo de la página da 9.90:1. Se usa este y no el gris
+   tenue, que ahí se queda en 4.55:1, al filo del mínimo. La jerarquía la marcan
+   el tamaño y el peso, no un texto más claro. */
+.hero__lead {
+  margin: 0;
+  max-width: 34rem;
+  font-size: $font-size-lg;
+  color: var(--text-body);
 }
 
-/* El botón de agendar solo aparece desde tableta: en teléfono la acción vive en
-   la barra inferior y duplicarla resta espacio a la lista. */
-.page-head__action {
+/* La acción principal como píldora con sombra teñida. No se pinta en teléfono:
+   "Agendar" ya está en la barra inferior, siempre visible y bajo el pulgar, y
+   repetirla aquí gastaría el alto que necesita la lista. */
+.hero__cta {
   display: none;
+  align-items: center;
+  gap: $spacing-2;
+  min-height: 3.5rem;
+  padding: 0 $spacing-8;
+  border-radius: $border-radius-full;
+  background-color: $color-primary;
+  color: var(--surface-card);
+  box-shadow: $shadow-primary-pill;
+  font-family: $font-family-label;
+  font-weight: $font-weight-semibold;
+  text-decoration: none;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
-.notice__text {
-  margin: 0 0 $spacing-3;
+.hero__cta:hover {
+  box-shadow: $shadow-primary-pill-hover;
+  transform: translateY(-2px);
+}
+
+.hero__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 /* ==========================================================================
@@ -33,25 +68,46 @@
    ========================================================================== */
 
 .group + .group,
-.empty-state + .group {
-  margin-top: $spacing-8;
+.nothing-next + .group {
+  margin-top: $spacing-10;
+}
+
+.group__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-3;
+  margin-bottom: $spacing-5;
 }
 
 .group__title {
-  font-size: $font-size-lg;
-  margin-bottom: $spacing-4;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
 }
 
-/* El historial es material de consulta, no la acción del día: se separa con una
-   línea y su título pesa menos que el de las próximas. */
-.group--history {
-  padding-top: $spacing-6;
-  border-top: 1px solid var(--border-subtle);
+/* Un conteo, no una barra de progreso: cuántas citas hay es un dato; una barra
+   prometería avance hacia algo que aquí no existe.
+   $color-primary sobre --primary-surface da 8.49:1. */
+.group__count {
+  padding: $spacing-1 $spacing-3;
+  border-radius: $border-radius-full;
+  background-color: var(--primary-surface);
+  color: $color-primary;
+  font-family: $font-family-label;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
 }
 
+/* El historial pesa menos: título en el gris medio (7.24:1 sobre el fondo) y
+   conteo neutro (--text-default sobre --surface-sunken, 6.91:1). */
 .group--history .group__title {
-  font-size: $font-size-base;
-  color: var(--text-muted);
+  color: var(--text-default);
+}
+
+.group--history .group__count {
+  background-color: var(--surface-sunken);
+  color: var(--text-default);
 }
 
 .cards {
@@ -63,6 +119,71 @@
 }
 
 /* ==========================================================================
+   Nada por delante / ninguna cita
+   ========================================================================== */
+
+.nothing-next {
+  padding: $spacing-10 $spacing-6;
+  text-align: center;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: $border-radius-3xl;
+}
+
+.nothing-next__title {
+  font-size: $font-size-lg;
+  margin-bottom: $spacing-2;
+}
+
+.nothing-next__text {
+  margin: 0 0 $spacing-6;
+  color: var(--text-body);
+}
+
+.notice__text {
+  margin: 0 0 $spacing-3;
+}
+
+/* ==========================================================================
+   Esqueleto de carga
+   ========================================================================== */
+
+.card-skeleton {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: $spacing-4;
+  padding: $spacing-5;
+  background-color: var(--surface-card);
+  border-radius: $border-radius-2xl;
+  box-shadow: $shadow-tinted;
+}
+
+.card-skeleton__lines {
+  display: grid;
+  align-content: center;
+  gap: $spacing-3;
+}
+
+.skeleton--date {
+  width: 4.5rem;
+  aspect-ratio: 1;
+  border-radius: $border-radius-2xl;
+}
+
+.skeleton--line {
+  height: 0.875rem;
+}
+
+.skeleton--line-lg {
+  height: 1.25rem;
+  width: 70%;
+}
+
+.skeleton--line-sm {
+  width: 40%;
+}
+
+/* ==========================================================================
    Diálogo de cancelación
    ========================================================================== */
 
@@ -70,7 +191,7 @@
   position: fixed;
   inset: 0;
   background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   display: flex;
   /* En teléfono la hoja se ancla abajo, donde alcanza el pulgar. */
   align-items: flex-end;
@@ -82,7 +203,7 @@
 .dialog {
   width: 100%;
   background-color: var(--surface-card);
-  border-radius: $border-radius-2xl $border-radius-2xl 0 0;
+  border-radius: $border-radius-3xl $border-radius-3xl 0 0;
   padding: $spacing-6 $spacing-5 calc(#{$spacing-6} + env(safe-area-inset-bottom));
   box-shadow: $shadow-xl;
   animation: fade-in-up-sm 0.2s ease-out;
@@ -107,42 +228,38 @@
 }
 
 /* ==========================================================================
-   Esqueletos
-   ========================================================================== */
-
-.skeleton--line {
-  height: 1rem;
-  margin-bottom: $spacing-3;
-}
-
-.skeleton--line-sm {
-  width: 35%;
-}
-
-.skeleton--line-lg {
-  height: 1.5rem;
-  width: 70%;
-}
-
-/* ==========================================================================
    Desde tableta
    ========================================================================== */
 
 @include respond-to('md') {
-  .page-head__title {
-    font-size: $font-size-2xl;
+  /* Título y párrafo se apilan en la primera columna; la píldora ocupa la
+     segunda a lo alto de las dos filas. */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: $spacing-8;
+    row-gap: $spacing-3;
+    margin-bottom: $spacing-12;
   }
 
-  .page-head__action {
+  .hero__title {
+    font-size: $font-size-4xl;
+    margin-bottom: 0;
+  }
+
+  .hero__cta {
     display: inline-flex;
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 
   .group__title {
-    font-size: $font-size-xl;
+    font-size: $font-size-2xl;
   }
 
-  .group--history .group__title {
-    font-size: $font-size-lg;
+  .cards {
+    gap: $spacing-5;
   }
 
   .backdrop {
@@ -152,8 +269,8 @@
 
   .dialog {
     max-width: 28rem;
-    border-radius: $border-radius-2xl;
-    padding: $spacing-6;
+    border-radius: $border-radius-3xl;
+    padding: $spacing-8;
   }
 
   .dialog__actions {
