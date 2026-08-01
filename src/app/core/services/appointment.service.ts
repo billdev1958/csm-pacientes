@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { SILENT_HTTP_ERRORS } from '../interceptors/error.interceptor';
+import { SILENT_HTTP_ERRORS } from '../interceptors/silent-errors.token';
 import { ApiResponse } from '../models/api.models';
 import {
   Appointment,

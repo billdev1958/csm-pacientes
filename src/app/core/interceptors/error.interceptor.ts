@@ -1,18 +1,10 @@
-import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../services/notification.service';
-
-/**
- * Marca una petición que el paciente no pidió.
- *
- * La usa el refresco de horarios en segundo plano: si la red se cae, ese sondeo
- * falla cada treinta segundos, y sin esto el portal sacaría una notificación
- * cada vez por algo que nadie solicitó.
- */
-export const SILENT_HTTP_ERRORS = new HttpContextToken<boolean>(() => false);
+import { SILENT_HTTP_ERRORS } from './silent-errors.token';
 
 /**
  * Traduce los fallos de red y de sesión a algo accionable.
