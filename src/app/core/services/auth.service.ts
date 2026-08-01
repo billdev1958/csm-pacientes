@@ -11,8 +11,14 @@ import { Role } from '../../shared/constants/roles';
 const TOKEN_KEY = 'csm_paciente_token';
 const USER_KEY = 'csm_paciente_user';
 
-/** Datos de sesión que se persisten. El token va aparte. */
-type StoredUser = Omit<LoginResponseData, 'token'>;
+/**
+ * Datos de sesión que se persisten. El token va aparte.
+ *
+ * `displayName` no viene del login —`LoginResponseData` no trae el nombre— sino
+ * de la primera pantalla que lo recibe del backend. Se guarda con la sesión para
+ * que sobreviva a una recarga.
+ */
+type StoredUser = Omit<LoginResponseData, 'token'> & { displayName?: string };
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -29,6 +35,34 @@ export class AuthService {
    * las pantallas están pensadas para el rol paciente.
    */
   readonly isPatient = computed(() => this.currentUser()?.role === Role.Patient);
+
+  /**
+   * Nombre del titular de la cuenta, o null mientras no se conozca.
+   *
+   * El backend no lo devuelve al identificarse: `POST /v1/login` responde
+   * accountID, role, token e isActive y nada más. La única fuente en el cliente
+   * es `GET /v1/appointment/schedules`, que la pantalla de agendar ya pide para
+   * armar su formulario, así que la barra superior lo muestra en cuanto se ha
+   * pasado por ahí una vez y desde ahí en adelante, incluso tras recargar.
+   */
+  readonly displayName = computed(() => this.currentUser()?.displayName ?? null);
+
+  /**
+   * Guarda el nombre del titular cuando una pantalla lo recibe del backend.
+   *
+   * No añade ninguna petición: se alimenta de una respuesta que ya se pedía. Sin
+   * sesión activa no hace nada, y si el nombre no cambió tampoco reescribe, para
+   * no tocar `localStorage` en cada visita.
+   */
+  rememberDisplayName(fullName: string): void {
+    const user = this.currentUser();
+    if (!user || !fullName || user.displayName === fullName) {
+      return;
+    }
+    const updated: StoredUser = { ...user, displayName: fullName };
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    this.currentUser.set(updated);
+  }
 
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponseData>> {
     return this.http
