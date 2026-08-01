@@ -9,17 +9,17 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: 'login',
-    title: 'Iniciar sesión — Portal de Pacientes',
+    title: 'Iniciar sesión — CMS UAEMéx',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },
   {
     path: 'registro',
-    title: 'Crear cuenta — Portal de Pacientes',
+    title: 'Crear cuenta — CMS UAEMéx',
     loadComponent: () => import('./features/auth/register/register').then((m) => m.Register),
   },
   {
     path: 'mis-citas',
-    title: 'Mis citas — Portal de Pacientes',
+    title: 'Mis citas — CMS UAEMéx',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/appointments/my-appointments/my-appointments').then(
@@ -28,7 +28,7 @@ export const routes: Routes = [
   },
   {
     path: 'agendar',
-    title: 'Agendar cita — Portal de Pacientes',
+    title: 'Agendar cita — CMS UAEMéx',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/appointments/book-appointment/book-appointment').then(
