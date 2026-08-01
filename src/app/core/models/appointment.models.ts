@@ -99,6 +99,20 @@ export interface SearchAppointmentsRequest {
   date?: string;
 }
 
+/**
+ * Ids de la tabla `appointment_status`.
+ *
+ * Se mapea por id y no por el `statusName` que llega del backend, que es texto
+ * libre de la base y puede cambiar sin avisar.
+ */
+export const AppointmentStatus = {
+  Pendiente: 1,
+  Confirmada: 2,
+  Iniciada: 3,
+  Concluida: 4,
+  Cancelada: 5,
+} as const;
+
 export interface Appointment {
   appointmentID: string;
   officeScheduleID: number;

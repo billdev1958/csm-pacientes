@@ -25,98 +25,38 @@
   margin: 0 0 $spacing-3;
 }
 
+/* ==========================================================================
+   Grupos: próximas e historial
+   ========================================================================== */
+
+.group + .group,
+.empty-state + .group {
+  margin-top: $spacing-8;
+}
+
+.group__title {
+  font-size: $font-size-lg;
+  margin-bottom: $spacing-4;
+}
+
+/* El historial es material de consulta, no la acción del día: se separa con una
+   línea y su título pesa menos que el de las próximas. */
+.group--history {
+  padding-top: $spacing-6;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.group--history .group__title {
+  font-size: $font-size-base;
+  color: var(--text-muted);
+}
+
 .cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: $spacing-4;
-}
-
-/* ==========================================================================
-   Tarjeta de cita
-   ========================================================================== */
-
-.appt {
-  border-left: 4px solid $color-primary;
-}
-
-.appt__head {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: $spacing-4;
-  margin-bottom: $spacing-4;
-}
-
-/* Bloque de fecha tipo calendario: lo primero que busca alguien al abrir la
-   pantalla es cuándo es su cita. */
-.appt__date {
-  display: grid;
-  place-items: center;
-  width: 3.25rem;
-  padding: $spacing-2 0;
-  margin: 0;
-  border-radius: $border-radius-lg;
-  background-color: var(--success-surface);
-  line-height: 1.1;
-}
-
-.appt__day {
-  font-family: $font-family-heading;
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: $color-primary;
-  font-variant-numeric: tabular-nums;
-}
-
-.appt__month {
-  font-size: $font-size-xs;
-  font-weight: $font-weight-bold;
-  text-transform: uppercase;
-  color: var(--success-strong);
-}
-
-.appt__service {
-  font-size: $font-size-base;
-  margin-bottom: $spacing-1;
-}
-
-.appt__when {
-  margin: 0;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: var(--warning-text);
-  text-transform: capitalize;
-}
-
-/* La insignia baja a su propia línea en teléfono para no estrechar el título. */
-.badge {
-  grid-column: 1 / -1;
-  justify-self: start;
-}
-
-.appt__meta {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: $spacing-1 $spacing-4;
-  margin: 0;
-  padding-top: $spacing-4;
-  border-top: 1px solid var(--border-subtle);
-  font-size: $font-size-sm;
-
-  dt {
-    color: var(--text-muted);
-  }
-
-  dd {
-    margin: 0;
-    color: var(--text-body);
-  }
-}
-
-.appt__actions {
-  margin-top: $spacing-5;
 }
 
 /* ==========================================================================
@@ -194,18 +134,12 @@
     display: inline-flex;
   }
 
-  .appt__head {
-    grid-template-columns: auto 1fr auto;
+  .group__title {
+    font-size: $font-size-xl;
   }
 
-  .badge {
-    grid-column: auto;
-    justify-self: end;
-  }
-
-  .appt__actions {
-    display: flex;
-    justify-content: flex-end;
+  .group--history .group__title {
+    font-size: $font-size-lg;
   }
 
   .backdrop {

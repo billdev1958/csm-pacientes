@@ -10,12 +10,15 @@
   </div>
 </header>
 
+<!-- Región viva persistente: está en el DOM desde el primer render, antes de que
+     su contenido cambie, que es la condición para que un lector de pantalla la
+     anuncie. -->
 <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
   @if (isLoading()) {
     Cargando tus citas.
   }
   @if (!isLoading() && !loadError()) {
-    {{ list().length }} citas.
+    {{ upcoming().length }} citas próximas y {{ history().length }} en el historial.
   }
 </div>
 
@@ -40,56 +43,58 @@
 
 @if (!isLoading() && !loadError()) {
   @if (hasAppointments()) {
-    <ul class="cards" role="list">
-      @for (appointment of list(); track appointment.appointmentID) {
-        <li class="appt card">
-          <div class="appt__head">
-            <p class="appt__date">
-              <span class="appt__day">{{ appointment.timeStart | date: 'd' : '' : 'es-MX' }}</span>
-              <span class="appt__month">{{
-                appointment.timeStart | date: 'MMM' : '' : 'es-MX'
-              }}</span>
-            </p>
-            <div class="appt__headings">
-              <h2 class="appt__service">{{ appointment.serviceName }}</h2>
-              <p class="appt__when">
-                {{ appointment.timeStart | date: 'EEEE, HH:mm' : '' : 'es-MX' }} h
-              </p>
-            </div>
-            @if (appointment.statusName) {
-              <span class="badge" [class]="'badge--' + statusModifier(appointment)">
-                {{ appointment.statusName }}
-              </span>
-            }
-          </div>
-
-          <dl class="appt__meta">
-            <dt>Paciente</dt>
-            <dd>{{ appointment.fullName }}</dd>
-            <dt>Consultorio</dt>
-            <dd>{{ appointment.officeName }}</dd>
-            <dt>Médico</dt>
-            <dd>{{ appointment.doctorName }}</dd>
-          </dl>
-
-          @if (canCancel(appointment)) {
-            <div class="appt__actions">
-              <button
-                type="button"
-                class="btn btn--danger btn--block"
-                [disabled]="cancellingId() === appointment.appointmentID"
-                [attr.aria-label]="
-                  'Cancelar la cita de ' + appointment.serviceName + ' de ' + appointment.fullName
-                "
-                (click)="askCancel(appointment)"
-              >
-                Cancelar cita
-              </button>
-            </div>
+    <!-- Próximas primero y en orden ascendente: la cita más cercana es lo que se
+         viene a mirar, y antes quedaba enterrada al final de una lista única. -->
+    @if (upcoming().length > 0) {
+      <section class="group" aria-labelledby="upcoming-title">
+        <h2 class="group__title" id="upcoming-title">Próximas</h2>
+        <ul class="cards" role="list">
+          @for (entry of upcoming(); track entry.appointment.appointmentID; let first = $first) {
+            <li>
+              <app-appointment-card
+                [appointment]="entry.appointment"
+                [countdown]="entry.countdown"
+                [badgeModifier]="statusModifier(entry.appointment)"
+                [canCancel]="canCancel(entry.appointment)"
+                [cancelling]="cancellingId() === entry.appointment.appointmentID"
+                [featured]="first"
+                (cancelRequested)="askCancel($event)"
+              />
+            </li>
           }
-        </li>
-      }
-    </ul>
+        </ul>
+      </section>
+    } @else {
+      <!-- Hay historial pero nada por delante: sin esto la pantalla es un archivo
+           muerto y no ofrece la única acción que queda por hacer. -->
+      <section class="empty-state" aria-labelledby="nothing-next-title">
+        <h2 class="empty-state__title" id="nothing-next-title">No tienes citas próximas</h2>
+        <p class="empty-state__text">Tus citas anteriores siguen abajo, en el historial.</p>
+        <a routerLink="/agendar" class="btn btn--primary">Agendar una cita</a>
+      </section>
+    }
+
+    @if (history().length > 0) {
+      <!-- Historial descendente: lo más reciente arriba, que es lo que se
+           consulta; lo de hace meses no tiene por qué abrir la sección. -->
+      <section class="group group--history" aria-labelledby="history-title">
+        <h2 class="group__title" id="history-title">Historial</h2>
+        <ul class="cards" role="list">
+          @for (entry of history(); track entry.appointment.appointmentID) {
+            <li>
+              <app-appointment-card
+                [appointment]="entry.appointment"
+                [countdown]="entry.countdown"
+                [badgeModifier]="statusModifier(entry.appointment)"
+                [canCancel]="canCancel(entry.appointment)"
+                [cancelling]="cancellingId() === entry.appointment.appointmentID"
+                (cancelRequested)="askCancel($event)"
+              />
+            </li>
+          }
+        </ul>
+      </section>
+    }
   } @else {
     <div class="empty-state">
       <h2 class="empty-state__title">Todavía no tienes citas</h2>

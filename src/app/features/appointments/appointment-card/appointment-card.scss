@@ -1,0 +1,135 @@
+@use '../../../../assets/abstracts' as *;
+
+/* El anfitrión lleva las clases `appt card`, así que aquí solo hace falta darle
+   comportamiento de bloque: un componente sin estilo es inline y rompería la
+   cuadrícula de la lista. */
+:host {
+  display: block;
+  /* Gris por defecto; la cita más cercana lo cambia a verde. */
+  border-left: 4px solid var(--border-strong);
+}
+
+:host(.appt--next) {
+  border-left-color: $color-primary;
+  box-shadow: $shadow-md;
+}
+
+.appt__head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: $spacing-4;
+  margin-bottom: $spacing-4;
+}
+
+/* Bloque de fecha tipo calendario: lo primero que busca alguien al abrir la
+   pantalla es cuándo es su cita. */
+.appt__date {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  padding: $spacing-2 0;
+  margin: 0;
+  border-radius: $border-radius-lg;
+  background-color: var(--success-surface);
+  line-height: 1.1;
+}
+
+.appt__day {
+  font-family: $font-family-heading;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.appt__month {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  color: var(--success-strong);
+}
+
+.appt__service {
+  font-size: $font-size-base;
+  margin-bottom: $spacing-1;
+}
+
+.appt__when {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--warning-text);
+  text-transform: capitalize;
+}
+
+/* Las etiquetas bajan a su propia línea en teléfono para no estrechar el título. */
+.appt__tags {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-2;
+}
+
+/* Cuánto falta, que es la pregunta con la que se abre esta pantalla. Comparte
+   forma de píldora con la insignia de estado, pero no su color: una dice cuándo
+   y la otra en qué situación está.
+
+   Contraste calculado: --text-default #475569 sobre --surface-sunken #f1f5f9 da
+   6.91:1, y $color-primary #284c34 sobre --success-surface #ecfdf5 da 9.17:1.
+   Ambos por encima del 4.5:1 de WCAG 1.4.3 para texto normal. */
+.appt__countdown {
+  padding: $spacing-1 $spacing-3;
+  border-radius: $border-radius-full;
+  background-color: var(--surface-sunken);
+  color: var(--text-default);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+}
+
+:host(.appt--next) .appt__countdown {
+  background-color: var(--success-surface);
+  color: $color-primary;
+  font-weight: $font-weight-bold;
+}
+
+.appt__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: $spacing-1 $spacing-4;
+  margin: 0;
+  padding-top: $spacing-4;
+  border-top: 1px solid var(--border-subtle);
+  font-size: $font-size-sm;
+
+  dt {
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-body);
+  }
+}
+
+.appt__actions {
+  margin-top: $spacing-5;
+}
+
+@include respond-to('md') {
+  .appt__head {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .appt__tags {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+
+  .appt__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}

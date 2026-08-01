@@ -1,20 +1,15 @@
+import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { DialogDirective } from '../../../shared/directives/dialog.directive';
+import { AppointmentCard } from '../appointment-card/appointment-card';
+import { groupAppointments } from '../appointment-grouping';
 
-import { Appointment } from '../../../core/models/appointment.models';
+import { Appointment, AppointmentStatus } from '../../../core/models/appointment.models';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { NotificationService } from '../../../core/services/notification.service';
-
-/** Ids de la tabla `appointment_status`. */
-const STATUS_PENDIENTE = 1;
-const STATUS_CONFIRMADA = 2;
-const STATUS_INICIADA = 3;
-const STATUS_CONCLUIDA = 4;
-const STATUS_CANCELADA = 5;
 
 /**
  * Estados que el backend acepta cancelar. Es una lista de permitidos y no de
@@ -23,11 +18,14 @@ const STATUS_CANCELADA = 5;
  * a rechazar. La regla espeja la validación de `CancelAppointment`, que rechaza
  * iniciada, concluida y cancelada.
  */
-const CANCELLABLE_STATUSES: readonly number[] = [STATUS_PENDIENTE, STATUS_CONFIRMADA];
+const CANCELLABLE_STATUSES: readonly number[] = [
+  AppointmentStatus.Pendiente,
+  AppointmentStatus.Confirmada,
+];
 
 @Component({
   selector: 'app-my-appointments',
-  imports: [DatePipe, RouterLink, DialogDirective],
+  imports: [DatePipe, RouterLink, DialogDirective, AppointmentCard],
   templateUrl: './my-appointments.html',
   styleUrl: './my-appointments.scss',
 })
@@ -42,6 +40,22 @@ export class MyAppointments {
   protected readonly cancellingId = signal<string | null>(null);
   /** Cita cuya cancelación se está confirmando. */
   protected readonly pendingCancel = signal<Appointment | null>(null);
+
+  /**
+   * Instante contra el que se decide qué es próximo y cuánto falta. Se fija al
+   * cargar en lugar de leer el reloj dentro del `computed`: así la agrupación no
+   * cambia sola a mitad de una interacción, y se vuelve a calcular en cada
+   * recarga, que es cuando los datos pueden haber cambiado de todas formas.
+   */
+  private readonly now = signal(new Date());
+
+  private readonly grouped = computed(() => groupAppointments(this.list(), this.now()));
+
+  /** Las que todavía pueden ocurrir, de la más cercana a la más lejana. */
+  protected readonly upcoming = computed(() => this.grouped().upcoming);
+
+  /** Concluidas, canceladas y pasadas, de la más reciente a la más antigua. */
+  protected readonly history = computed(() => this.grouped().history);
 
   protected readonly hasAppointments = computed(() => this.list().length > 0);
 
@@ -61,6 +75,7 @@ export class MyAppointments {
       .subscribe({
         next: (appointments) => {
           this.isLoading.set(false);
+          this.now.set(new Date());
           this.list.set(appointments);
         },
         error: () => {
@@ -83,13 +98,13 @@ export class MyAppointments {
    */
   protected statusModifier(appointment: Appointment): string {
     switch (appointment.statusID) {
-      case STATUS_CONFIRMADA:
+      case AppointmentStatus.Confirmada:
       // Una cita en curso ya no está a la espera: comparte el estilo activo.
-      case STATUS_INICIADA:
+      case AppointmentStatus.Iniciada:
         return 'confirmed';
-      case STATUS_CONCLUIDA:
+      case AppointmentStatus.Concluida:
         return 'done';
-      case STATUS_CANCELADA:
+      case AppointmentStatus.Cancelada:
         return 'cancelled';
       default:
         return 'pending';

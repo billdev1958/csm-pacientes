@@ -1,0 +1,45 @@
+@let appt = appointment();
+
+<div class="appt__head">
+  <p class="appt__date">
+    <span class="appt__day">{{ appt.timeStart | date: 'd' : '' : 'es-MX' }}</span>
+    <span class="appt__month">{{ appt.timeStart | date: 'MMM' : '' : 'es-MX' }}</span>
+  </p>
+
+  <div class="appt__headings">
+    <h3 class="appt__service">{{ appt.serviceName }}</h3>
+    <p class="appt__when">{{ appt.timeStart | date: 'EEEE, HH:mm' : '' : 'es-MX' }} h</p>
+  </div>
+
+  <div class="appt__tags">
+    @if (countdown()) {
+      <span class="appt__countdown">{{ countdown() }}</span>
+    }
+    @if (appt.statusName) {
+      <span class="badge" [class]="'badge--' + badgeModifier()">{{ appt.statusName }}</span>
+    }
+  </div>
+</div>
+
+<dl class="appt__meta">
+  <dt>Paciente</dt>
+  <dd>{{ appt.fullName }}</dd>
+  <dt>Consultorio</dt>
+  <dd>{{ appt.officeName }}</dd>
+  <dt>Médico</dt>
+  <dd>{{ appt.doctorName }}</dd>
+</dl>
+
+@if (canCancel()) {
+  <div class="appt__actions">
+    <button
+      type="button"
+      class="btn btn--danger btn--block"
+      [disabled]="cancelling()"
+      [attr.aria-label]="'Cancelar la cita de ' + appt.serviceName + ' de ' + appt.fullName"
+      (click)="cancelRequested.emit(appt)"
+    >
+      Cancelar cita
+    </button>
+  </div>
+}
