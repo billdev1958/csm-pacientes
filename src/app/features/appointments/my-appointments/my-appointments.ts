@@ -9,9 +9,21 @@ import { Appointment } from '../../../core/models/appointment.models';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
-/** Estados de appointment_status. Cancelada y concluida ya no se pueden cancelar. */
-const STATUS_CANCELADA = 5;
+/** Ids de la tabla `appointment_status`. */
+const STATUS_PENDIENTE = 1;
+const STATUS_CONFIRMADA = 2;
+const STATUS_INICIADA = 3;
 const STATUS_CONCLUIDA = 4;
+const STATUS_CANCELADA = 5;
+
+/**
+ * Estados que el backend acepta cancelar. Es una lista de permitidos y no de
+ * prohibidos a propósito: si el estado llega ausente o con un id que este código
+ * no conoce, se oculta el botón en lugar de ofrecer una acción que el servidor va
+ * a rechazar. La regla espeja la validación de `CancelAppointment`, que rechaza
+ * iniciada, concluida y cancelada.
+ */
+const CANCELLABLE_STATUSES: readonly number[] = [STATUS_PENDIENTE, STATUS_CONFIRMADA];
 
 @Component({
   selector: 'app-my-appointments',
@@ -71,7 +83,9 @@ export class MyAppointments {
    */
   protected statusModifier(appointment: Appointment): string {
     switch (appointment.statusID) {
-      case 2:
+      case STATUS_CONFIRMADA:
+      // Una cita en curso ya no está a la espera: comparte el estilo activo.
+      case STATUS_INICIADA:
         return 'confirmed';
       case STATUS_CONCLUIDA:
         return 'done';
@@ -83,8 +97,11 @@ export class MyAppointments {
   }
 
   protected canCancel(appointment: Appointment): boolean {
-    const status = appointment.statusID;
-    return status !== STATUS_CANCELADA && status !== STATUS_CONCLUIDA;
+    // El campo es opcional en el contrato, así que un `undefined` cae fuera de la
+    // lista y oculta el botón, que es el lado seguro.
+    return (
+      appointment.statusID !== undefined && CANCELLABLE_STATUSES.includes(appointment.statusID)
+    );
   }
 
   protected askCancel(appointment: Appointment): void {
