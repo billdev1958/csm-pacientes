@@ -1,10 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
+import { vi } from 'vitest';
 
+import { ApiResponse } from '../../../core/models/api.models';
 import { AppointmentParams, OfficeSchedule } from '../../../core/models/appointment.models';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { BookAppointment } from './book-appointment';
 
 const PARAMS: AppointmentParams = {
@@ -243,5 +246,196 @@ describe('BookAppointment ante una franja que se ocupó', () => {
     // la misma franja indefinidamente.
     expect(c.selectedScheduleId()).toBeNull();
     expect(busquedas).toBe(busquedasTrasElegirCombinacion + 1);
+  });
+});
+
+/**
+ * Refresco oportunista: el portal vuelve a preguntar por las franjas por cuenta
+ * propia, para que una que otra persona acaba de tomar desaparezca antes de que
+ * la pulses. Se prueba con temporizadores falsos porque el sondeo va cada
+ * treinta segundos.
+ */
+describe('BookAppointment refrescando los horarios en segundo plano', () => {
+  /** Tiene que coincidir con `REFRESH_INTERVAL_MS` del componente. */
+  const SONDEO_MS = 30_000;
+
+  let fixture: ComponentFixture<BookAppointment>;
+  let busquedas: number;
+  let respuesta: () => Observable<OfficeSchedule[]>;
+  let creacion: () => Observable<ApiResponse>;
+
+  /** jsdom sirve `visibilityState` desde el prototipo; esto lo sombrea. */
+  function fijarVisibilidad(estado: 'visible' | 'hidden'): void {
+    Object.defineProperty(document, 'visibilityState', { value: estado, configurable: true });
+  }
+
+  beforeEach(async () => {
+    busquedas = 0;
+    respuesta = () => of(FRANJAS);
+    creacion = () => of({ status: 'success' as const });
+    fijarVisibilidad('visible');
+
+    const servicio = {
+      getParams: () => of(PARAMS),
+      getAvailableSchedules: () => {
+        busquedas += 1;
+        return respuesta();
+      },
+      createAppointment: () => creacion(),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [BookAppointment],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        { provide: AppointmentService, useValue: servicio },
+      ],
+    }).compileComponents();
+
+    // Después de compilar y antes de construir: el sondeo se suscribe en el
+    // constructor, así que a partir de aquí el reloj tiene que ser el falso.
+    vi.useFakeTimers();
+    fixture = TestBed.createComponent(BookAppointment);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    fijarVisibilidad('visible');
+  });
+
+  function api() {
+    return fixture.componentInstance as unknown as {
+      form: { patchValue: (v: Record<string, string>) => void };
+      schedules: () => OfficeSchedule[];
+      selectedScheduleId: () => number | null;
+      isLoadingSchedules: () => boolean;
+      schedulesError: () => string | null;
+      selectSchedule: (s: OfficeSchedule) => void;
+      confirm: () => void;
+    };
+  }
+
+  /** Deja la pantalla con horarios cargados y, si se pide, una franja elegida. */
+  function verHorarios(eligiendo = false): void {
+    api().form.patchValue({ serviceID: '13', shiftID: '1', appointmentDate: '2026-08-03' });
+    if (eligiendo) {
+      api().selectSchedule(FRANJAS[0]);
+    }
+  }
+
+  it('vuelve a preguntar cada treinta segundos mientras hay horarios en pantalla', () => {
+    verHorarios();
+    const trasBuscar = busquedas;
+
+    vi.advanceTimersByTime(SONDEO_MS);
+    expect(busquedas).toBe(trasBuscar + 1);
+
+    vi.advanceTimersByTime(SONDEO_MS);
+    expect(busquedas).toBe(trasBuscar + 2);
+  });
+
+  it('no sondea con la pestaña detrás', () => {
+    verHorarios();
+    const trasBuscar = busquedas;
+
+    fijarVisibilidad('hidden');
+    vi.advanceTimersByTime(SONDEO_MS * 3);
+
+    expect(busquedas).toBe(trasBuscar);
+  });
+
+  it('no sondea con el formulario a medias', () => {
+    api().form.patchValue({ serviceID: '13', shiftID: '1' });
+    expect(busquedas).toBe(0);
+
+    vi.advanceTimersByTime(SONDEO_MS * 2);
+
+    expect(busquedas).toBe(0);
+  });
+
+  // El caso real: alguien deja esto abierto, se va diez minutos y vuelve a una
+  // lista que ya no describe la realidad.
+  it('rebusca al volver a la pestaña, y no al dejarla', () => {
+    verHorarios();
+    const trasBuscar = busquedas;
+
+    fijarVisibilidad('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(busquedas).toBe(trasBuscar);
+
+    fijarVisibilidad('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(busquedas).toBe(trasBuscar + 1);
+  });
+
+  it('el refresco no enseña esqueleto ni suelta la franja que sigue libre', () => {
+    verHorarios(true);
+    expect(api().selectedScheduleId()).toBe(FRANJAS[0].id);
+
+    vi.advanceTimersByTime(SONDEO_MS);
+
+    // Si esto se rompe, el bloque de confirmación desaparece del DOM con el foco
+    // dentro mientras el paciente escribe el motivo.
+    expect(api().selectedScheduleId()).toBe(FRANJAS[0].id);
+    expect(api().isLoadingSchedules()).toBe(false);
+    expect(api().schedules().length).toBe(2);
+  });
+
+  it('suelta la franja elegida y avisa si otra persona la reservó', () => {
+    verHorarios(true);
+    respuesta = () => of([{ ...FRANJAS[0], statusID: 2 }, FRANJAS[1]]);
+
+    vi.advanceTimersByTime(SONDEO_MS);
+
+    expect(api().selectedScheduleId()).toBeNull();
+    // No se quita en silencio: el paciente estaba a punto de confirmar esa.
+    expect(TestBed.inject(NotificationService).current()?.message).toContain(
+      'acaba de ser reservado',
+    );
+  });
+
+  it('también la suelta si desaparece de la lista', () => {
+    verHorarios(true);
+    respuesta = () => of([FRANJAS[1]]);
+
+    vi.advanceTimersByTime(SONDEO_MS);
+
+    expect(api().selectedScheduleId()).toBeNull();
+  });
+
+  it('un sondeo que falla se ignora: ni borra la lista ni saca el error de búsqueda', () => {
+    verHorarios(true);
+    respuesta = () => throwError(() => ({ status: 0 }));
+
+    vi.advanceTimersByTime(SONDEO_MS);
+
+    expect(api().schedules().length).toBe(2);
+    expect(api().selectedScheduleId()).toBe(FRANJAS[0].id);
+    expect(api().schedulesError()).toBeNull();
+    expect(api().isLoadingSchedules()).toBe(false);
+  });
+
+  it('no sondea mientras la cita se está confirmando', () => {
+    verHorarios(true);
+    // Una petición que se queda en vuelo: `isSubmitting` no vuelve a false.
+    creacion = () => new Subject<ApiResponse>();
+    api().confirm();
+    const trasConfirmar = busquedas;
+
+    vi.advanceTimersByTime(SONDEO_MS * 2);
+
+    expect(busquedas).toBe(trasConfirmar);
+  });
+
+  it('al salir de la pantalla no queda ningún temporizador vivo', () => {
+    verHorarios();
+    const trasBuscar = busquedas;
+
+    fixture.destroy();
+    vi.advanceTimersByTime(SONDEO_MS * 5);
+
+    expect(busquedas).toBe(trasBuscar);
   });
 });

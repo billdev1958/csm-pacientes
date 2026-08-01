@@ -1,5 +1,6 @@
 import {
   Component,
+  DOCUMENT,
   DestroyRef,
   ElementRef,
   computed,
@@ -11,7 +12,19 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { EMPTY, Observable, Subject, catchError, filter, merge, switchMap, tap } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  Subject,
+  catchError,
+  filter,
+  fromEvent,
+  interval,
+  map,
+  merge,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import {
   AppointmentParams,
@@ -32,6 +45,23 @@ const QUICK_DATE_COUNT = 5;
 /** El backend responde 409 cuando la franja se ocupó antes de confirmar. */
 const HTTP_CONFLICT = 409;
 
+/**
+ * Cada cuánto se vuelve a preguntar por las franjas mientras están en pantalla.
+ *
+ * Treinta segundos es el compromiso: suficiente para que una franja que otra
+ * persona acaba de tomar desaparezca antes de que la pulses, y poco tráfico
+ * —dos peticiones por minuto y solo con la pestaña delante—.
+ */
+const REFRESH_INTERVAL_MS = 30_000;
+
+/**
+ * Quién pidió una búsqueda.
+ *
+ * No es lo mismo: la que pide el paciente enseña esqueleto y puede enseñar un
+ * error; la de segundo plano no puede hacer ninguna de las dos cosas.
+ */
+type SearchTrigger = 'requested' | 'refreshed';
+
 @Component({
   selector: 'app-book-appointment',
   imports: [ReactiveFormsModule, ClockTimePipe, ShiftPicker],
@@ -45,6 +75,7 @@ export class BookAppointment {
   private readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly document = inject(DOCUMENT);
 
   protected readonly params = signal<AppointmentParams | null>(null);
   protected readonly schedules = signal<OfficeSchedule[]>([]);
@@ -217,19 +248,47 @@ export class BookAppointment {
       this.form.controls.appointmentDate.valueChanges,
     ).pipe(tap(() => this.discardSchedules()));
 
-    merge(criteriaChanged, this.retry)
+    // Lo que pide el paciente: cambiar la combinación o pulsar reintentar.
+    const requested = merge(criteriaChanged, this.retry).pipe(
+      filter(() => this.criteria() !== null),
+      map((): SearchTrigger => 'requested'),
+    );
+
+    // Lo que no pide nadie. Dos disparadores:
+    //
+    //   - Volver a la pestaña, que es el caso real: alguien deja esto abierto,
+    //     se va diez minutos y vuelve a una lista que ya no describe la realidad.
+    //   - Un sondeo cada treinta segundos mientras mira los horarios.
+    //
+    // `canRefresh` es lo que impide que esto moleste: no corre con la pestaña
+    // detrás, ni con el formulario a medias, ni mientras hay algo en vuelo.
+    const refreshed = merge(
+      fromEvent(this.document, 'visibilitychange'),
+      interval(REFRESH_INTERVAL_MS),
+    ).pipe(
+      filter(() => this.canRefresh()),
+      map((): SearchTrigger => 'refreshed'),
+    );
+
+    // Una sola tubería, un solo `switchMap`: nunca hay más de una petición viva
+    // y siempre gana la última que entró. Por eso una búsqueda del paciente
+    // cancela el sondeo que estuviera en vuelo, y lo contrario no puede pasar,
+    // porque `canRefresh` no deja arrancar un sondeo mientras algo se carga.
+    merge(requested, refreshed)
       .pipe(
-        filter(() => this.criteria() !== null),
-        // `switchMap` cancela la búsqueda anterior: si alguien cambia de fecha
-        // dos veces seguidas, la respuesta lenta de la primera ya no puede pisar
-        // a la de la segunda.
-        switchMap(() => this.fetchSchedules()),
+        switchMap((trigger) =>
+          (trigger === 'requested' ? this.fetchSchedules() : this.fetchSchedulesQuietly()).pipe(
+            map((schedules) => ({ trigger, schedules })),
+          ),
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((schedules) => {
-        this.isLoadingSchedules.set(false);
-        this.hasSearched.set(true);
-        this.schedules.set(schedules);
+      .subscribe(({ trigger, schedules }) => {
+        if (trigger === 'requested') {
+          this.applyRequestedSearch(schedules);
+          return;
+        }
+        this.applyRefresh(schedules);
       });
 
     // Al elegir un horario, el bloque de confirmación aparece más abajo; en
@@ -323,6 +382,82 @@ export class BookAppointment {
         this.schedulesError.set('No se pudieron cargar los horarios de ese día.');
         return EMPTY;
       }),
+    );
+  }
+
+  /**
+   * Lo mismo, pero sin tocar nada de lo que se ve.
+   *
+   * Ni esqueleto de carga ni mensaje de error: un sondeo que falla —se cayó la
+   * red, el servidor no contesta— se descarta y la lista se queda como estaba.
+   * El paciente no pidió nada, así que no tiene por qué enterarse; la petición
+   * va marcada como silenciosa para que tampoco salte la notificación global.
+   */
+  private fetchSchedulesQuietly(): Observable<OfficeSchedule[]> {
+    const criteria = this.criteria();
+    if (!criteria) {
+      return EMPTY;
+    }
+
+    return this.appointments
+      .getAvailableSchedules(criteria, { silentErrors: true })
+      .pipe(catchError(() => EMPTY));
+  }
+
+  /**
+   * Si toca volver a preguntar por las franjas por cuenta propia.
+   *
+   * Todas las condiciones son para no estorbar: con la pestaña detrás no hay
+   * nadie mirando; con el formulario a medias no hay nada que refrescar; con una
+   * lista vacía tampoco; y si hay una búsqueda cargando, un envío en curso o un
+   * error en pantalla, el paciente ya está en medio de algo.
+   */
+  private canRefresh(): boolean {
+    return (
+      this.document.visibilityState === 'visible' &&
+      this.criteria() !== null &&
+      this.schedules().length > 0 &&
+      !this.isLoadingSchedules() &&
+      !this.isSubmitting() &&
+      this.schedulesError() === null
+    );
+  }
+
+  private applyRequestedSearch(schedules: OfficeSchedule[]): void {
+    this.isLoadingSchedules.set(false);
+    this.hasSearched.set(true);
+    this.schedules.set(schedules);
+  }
+
+  /**
+   * Mete el resultado de un refresco sin pisar al paciente.
+   *
+   * La lista se sustituye en silencio —un esqueleto parpadeando cada treinta
+   * segundos dejaría la pantalla inservible— y la franja elegida sigue elegida
+   * mientras siga libre, para que el bloque de confirmación no desaparezca del
+   * DOM con el foco dentro mientras se escribe el motivo.
+   */
+  private applyRefresh(schedules: OfficeSchedule[]): void {
+    const chosenId = this.selectedScheduleId();
+    this.schedules.set(schedules);
+
+    if (chosenId === null || this.isStillAvailable(schedules, chosenId)) {
+      return;
+    }
+
+    // Se suelta, pero no en silencio: el paciente estaba a punto de confirmar
+    // justo esa, y que se esfumara sin explicación sería peor que el aviso.
+    this.selectedScheduleId.set(null);
+    this.notifications.show(
+      'El horario que habías elegido acaba de ser reservado. Elige otro.',
+      'error',
+    );
+  }
+
+  /** Sigue en la lista Y sigue libre: que vuelva marcada como ocupada no vale. */
+  private isStillAvailable(schedules: readonly OfficeSchedule[], id: number): boolean {
+    return schedules.some(
+      (schedule) => schedule.id === id && schedule.statusID === SCHEDULE_AVAILABLE,
     );
   }
 
