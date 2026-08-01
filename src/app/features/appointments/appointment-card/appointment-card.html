@@ -8,7 +8,9 @@
 
   <div class="appt__headings">
     <h3 class="appt__service">{{ appt.serviceName }}</h3>
-    <p class="appt__when">{{ appt.timeStart | date: 'EEEE, HH:mm' : '' : 'es-MX' }} h</p>
+    <!-- 12 h y no "09:00 h": el formato administrativo obliga a traducir la hora
+         mentalmente y se presta a confundir la mañana con la tarde. -->
+    <p class="appt__when">{{ appt.timeStart | date: 'EEEE, h:mm a' : '' : 'es-MX' }}</p>
   </div>
 
   <div class="appt__tags">

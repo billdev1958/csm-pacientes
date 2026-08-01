@@ -120,7 +120,7 @@
       <h2 class="dialog__title" id="cancel-title">¿Cancelar esta cita?</h2>
       <p class="dialog__desc" id="cancel-desc">
         {{ appointment.serviceName }},
-        {{ appointment.timeStart | date: "EEEE d 'de' MMMM 'a las' HH:mm" : '' : 'es-MX' }}. Esta
+        {{ appointment.timeStart | date: "EEEE d 'de' MMMM 'a las' h:mm a" : '' : 'es-MX' }}. Esta
         acción no se puede deshacer y tendrás que agendar de nuevo.
       </p>
       <div class="dialog__actions">
