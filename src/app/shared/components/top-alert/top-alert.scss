@@ -1,0 +1,49 @@
+@use '../../../../assets/abstracts' as *;
+
+.alert-region {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: $z-index-toast;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+  margin-top: $spacing-4;
+  padding: $spacing-3 $spacing-6;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-lg;
+  pointer-events: auto;
+  animation: fade-in-down 0.25s ease-out;
+  color: var(--surface-card);
+
+  &--success {
+    background-color: var(--success-strong);
+  }
+  &--error {
+    background-color: var(--danger-text);
+  }
+  &--info {
+    background-color: $color-primary;
+  }
+}
+
+.alert__message {
+  font-weight: $font-weight-medium;
+}
+
+.alert__close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 $spacing-1;
+}

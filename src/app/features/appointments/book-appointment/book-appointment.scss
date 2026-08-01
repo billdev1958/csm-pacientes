@@ -1,0 +1,106 @@
+@use '../../../../assets/abstracts' as *;
+
+.page__title {
+  font-family: $font-family-heading;
+  font-size: $font-size-2xl;
+  color: $color-primary;
+  margin: 0 0 $spacing-6;
+}
+
+.page__error {
+  padding: $spacing-3 $spacing-4;
+  border-radius: $border-radius-md;
+  background-color: var(--danger-surface);
+  color: var(--danger-text);
+  border-left: 3px solid var(--danger);
+}
+
+.status {
+  margin: 0 0 $spacing-4;
+  color: var(--text-muted);
+}
+
+.card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: $border-radius-lg;
+  padding: $spacing-6;
+  margin-bottom: $spacing-6;
+  box-shadow: $shadow-sm;
+}
+
+.card__title {
+  font-family: $font-family-heading;
+  font-size: $font-size-lg;
+  color: $color-primary;
+  margin: 0 0 $spacing-5;
+}
+
+.grid {
+  display: grid;
+  gap: $spacing-5;
+  margin-bottom: $spacing-5;
+  grid-template-columns: 1fr;
+}
+
+.slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: $spacing-3;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+}
+
+.slot {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+  padding: $spacing-3 $spacing-4;
+  border: 1px solid var(--border-strong);
+  border-radius: $border-radius-md;
+  background-color: var(--surface-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &--selected {
+    border-color: $color-primary;
+    background-color: var(--success-surface);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: var(--surface-sunken);
+    color: var(--text-muted);
+  }
+}
+
+.slot__time {
+  font-weight: $font-weight-semibold;
+  color: var(--text-strong);
+}
+
+.slot__office {
+  font-size: $font-size-sm;
+  color: var(--text-muted);
+}
+
+.slot__tag {
+  font-size: $font-size-xs;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.empty {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@include respond-to('md') {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

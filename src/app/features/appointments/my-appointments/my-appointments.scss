@@ -1,0 +1,133 @@
+@use '../../../../assets/abstracts' as *;
+
+.page__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+}
+
+.page__title {
+  font-family: $font-family-heading;
+  font-size: $font-size-2xl;
+  color: $color-primary;
+  margin: 0;
+}
+
+.page__error {
+  padding: $spacing-3 $spacing-4;
+  border-radius: $border-radius-md;
+  background-color: var(--danger-surface);
+  color: var(--danger-text);
+  border-left: 3px solid var(--danger);
+}
+
+.status {
+  margin: 0 0 $spacing-4;
+  color: var(--text-muted);
+}
+
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: $spacing-4;
+}
+
+.appointment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $spacing-4;
+  padding: $spacing-6;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid $color-primary;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+}
+
+.appointment__service {
+  font-family: $font-family-heading;
+  font-size: $font-size-lg;
+  color: var(--text-strong);
+  margin: 0 0 $spacing-1;
+}
+
+.appointment__when {
+  margin: 0 0 $spacing-4;
+  color: var(--warning-text);
+  font-weight: $font-weight-semibold;
+  text-transform: capitalize;
+}
+
+.appointment__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: $spacing-1 $spacing-4;
+  margin: 0;
+  font-size: $font-size-sm;
+
+  dt {
+    color: var(--text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--text-body);
+  }
+}
+
+.empty {
+  padding: $spacing-8;
+  text-align: center;
+  color: var(--text-muted);
+  background-color: var(--surface-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: $border-radius-lg;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-4;
+  z-index: $z-index-modal-back;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 26rem;
+  background-color: var(--surface-card);
+  border-radius: $border-radius-lg;
+  padding: $spacing-6;
+  box-shadow: $shadow-lg;
+  animation: fade-in-up-sm 0.2s ease-out;
+}
+
+.dialog__title {
+  font-family: $font-family-heading;
+  font-size: $font-size-lg;
+  color: var(--text-strong);
+  margin: 0 0 $spacing-3;
+}
+
+.dialog__desc {
+  margin: 0 0 $spacing-6;
+  color: var(--text-body);
+}
+
+.dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-3;
+  justify-content: flex-end;
+}

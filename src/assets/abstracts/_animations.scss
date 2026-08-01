@@ -1,0 +1,71 @@
+// ==========================================================================
+// Animaciones compartidas
+// ==========================================================================
+//
+// Los @keyframes ignoran el anidamiento de Sass: son siempre globales. Antes
+// había cinco definiciones distintas de `fadeIn` repartidas por los
+// componentes, así que la última en el orden de @use (la de _medical-history,
+// con translateY(10px)) sobrescribía a las otras cuatro para todos los
+// consumidores. Por eso el spinner de carga se desplazaba 10px cuando su autor
+// solo pidió opacidad, y el desplegable de _registro-horarios entraba desde
+// abajo cuando estaba escrito para entrar desde arriba.
+//
+// Cada variante tiene ahora su propio nombre y vive solo aquí.
+
+/// Solo opacidad, sin desplazamiento.
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/// Entra desde arriba (para menús y desplegables anclados por su borde superior).
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/// Entra desde abajo, recorrido corto.
+@keyframes fade-in-up-sm {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/// Entra desde abajo, recorrido normal (secciones de contenido).
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/// Entra deslizándose desde la derecha (paneles laterales de filtros).
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}

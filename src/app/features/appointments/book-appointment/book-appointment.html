@@ -1,0 +1,140 @@
+<h1 class="page__title">Agendar cita</h1>
+
+<div class="status-region" role="status" aria-live="polite" aria-atomic="true">
+  @if (isLoadingParams()) {
+    <p class="status">Cargando datos…</p>
+  }
+  @if (isLoadingSchedules()) {
+    <p class="status">Buscando horarios disponibles…</p>
+  }
+</div>
+
+@if (loadError()) {
+  <p class="page__error" role="alert">{{ loadError() }}</p>
+}
+
+@if (params(); as data) {
+  <form [formGroup]="form" (ngSubmit)="searchSchedules()">
+    <section class="card" aria-labelledby="step1-title">
+      <h2 class="card__title" id="step1-title">1. ¿Para quién y qué necesitas?</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label for="book-patient">Paciente</label>
+          <select id="book-patient" formControlName="beneficiaryID">
+            @for (option of patientOptions(); track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="book-service">Servicio</label>
+          <select id="book-service" formControlName="serviceID" required>
+            <option value="">Selecciona un servicio</option>
+            @for (service of data.services ?? []; track service.id) {
+              <option [value]="service.id">{{ service.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="book-shift">Turno</label>
+          <select id="book-shift" formControlName="shiftID" required>
+            <option value="">Selecciona un turno</option>
+            @for (shift of data.shifts ?? []; track shift.id) {
+              <option [value]="shift.id">{{ shift.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="book-date">Fecha</label>
+          <input
+            id="book-date"
+            type="date"
+            formControlName="appointmentDate"
+            [min]="today"
+            required
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary" [disabled]="isLoadingSchedules()">
+        Buscar horarios
+      </button>
+    </section>
+  </form>
+
+  @if (schedules().length > 0) {
+    <section class="card" aria-labelledby="step2-title">
+      <h2 class="card__title" id="step2-title">2. Elige un horario</h2>
+
+      @if (availableSchedules().length === 0) {
+        <p class="empty">Todos los horarios de ese día están ocupados. Prueba con otra fecha.</p>
+      } @else {
+        <ul class="slots" role="list">
+          @for (schedule of schedules(); track schedule.id) {
+            <li>
+              <button
+                type="button"
+                class="slot"
+                [class.slot--selected]="selectedScheduleId() === schedule.id"
+                [disabled]="schedule.statusID !== 1"
+                [attr.aria-pressed]="selectedScheduleId() === schedule.id"
+                [attr.aria-label]="
+                  schedule.statusID === 1
+                    ? 'Reservar de ' +
+                      schedule.timeStart +
+                      ' a ' +
+                      schedule.timeEnd +
+                      ' en ' +
+                      schedule.officeName
+                    : 'De ' + schedule.timeStart + ' a ' + schedule.timeEnd + ', no disponible'
+                "
+                (click)="selectSchedule(schedule)"
+              >
+                <span class="slot__time">{{ schedule.timeStart }} – {{ schedule.timeEnd }}</span>
+                <span class="slot__office">{{ schedule.officeName }}</span>
+                @if (schedule.statusID !== 1) {
+                  <span class="slot__tag">No disponible</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  @if (selectedScheduleId() !== null) {
+    <section class="card" aria-labelledby="step3-title">
+      <h2 class="card__title" id="step3-title">3. Confirma</h2>
+
+      <form [formGroup]="form" (ngSubmit)="confirm()">
+        <div class="field">
+          <label for="book-reason"
+            >Motivo de la consulta <span class="field__optional">(opcional)</span></label
+          >
+          <input id="book-reason" type="text" formControlName="reason" maxlength="200" />
+        </div>
+
+        <div class="field">
+          <label for="book-symptoms"
+            >Síntomas <span class="field__optional">(opcional)</span></label
+          >
+          <textarea
+            id="book-symptoms"
+            formControlName="symptoms"
+            rows="3"
+            maxlength="500"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn--primary" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Agendando…' : 'Confirmar cita' }}
+        </button>
+      </form>
+    </section>
+  }
+}

@@ -1,0 +1,165 @@
+<section class="auth" aria-labelledby="register-title">
+  <h1 class="auth__title" id="register-title">Crear cuenta</h1>
+  <p class="auth__lead">Regístrate para agendar tus citas en línea.</p>
+
+  @if (errorMessage()) {
+    <p class="auth__error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <form class="auth__form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="field">
+      <label for="reg-name">Nombre</label>
+      <input
+        id="reg-name"
+        type="text"
+        formControlName="name"
+        autocomplete="given-name"
+        required
+        [attr.aria-invalid]="control('name').touched && control('name').invalid ? 'true' : null"
+        [attr.aria-describedby]="
+          control('name').touched && control('name').invalid ? 'reg-name-error' : null
+        "
+      />
+      @if (control('name').touched && control('name').invalid) {
+        <p class="field__error" id="reg-name-error">Escribe tu nombre.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-lastname1">Primer apellido</label>
+      <input
+        id="reg-lastname1"
+        type="text"
+        formControlName="lastname1"
+        autocomplete="family-name"
+        required
+        [attr.aria-invalid]="
+          control('lastname1').touched && control('lastname1').invalid ? 'true' : null
+        "
+        [attr.aria-describedby]="
+          control('lastname1').touched && control('lastname1').invalid
+            ? 'reg-lastname1-error'
+            : null
+        "
+      />
+      @if (control('lastname1').touched && control('lastname1').invalid) {
+        <p class="field__error" id="reg-lastname1-error">Escribe tu primer apellido.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-lastname2"
+        >Segundo apellido <span class="field__optional">(opcional)</span></label
+      >
+      <input id="reg-lastname2" type="text" formControlName="lastname2" />
+    </div>
+
+    <div class="field">
+      <label for="reg-curp">CURP</label>
+      <input
+        id="reg-curp"
+        type="text"
+        formControlName="curp"
+        maxlength="18"
+        required
+        [attr.aria-invalid]="control('curp').touched && control('curp').invalid ? 'true' : null"
+        [attr.aria-describedby]="
+          'reg-curp-hint' +
+          (control('curp').touched && control('curp').invalid ? ' reg-curp-error' : '')
+        "
+      />
+      <p class="field__hint" id="reg-curp-hint">
+        18 caracteres, como aparece en tu documento oficial.
+      </p>
+      @if (control('curp').touched && control('curp').invalid) {
+        <p class="field__error" id="reg-curp-error">
+          La CURP debe tener exactamente 18 caracteres.
+        </p>
+      }
+    </div>
+
+    <fieldset class="field field--group">
+      <legend>Sexo</legend>
+      <label class="field__radio">
+        <input type="radio" formControlName="sex" value="M" /> Hombre
+      </label>
+      <label class="field__radio">
+        <input type="radio" formControlName="sex" value="F" /> Mujer
+      </label>
+      @if (control('sex').touched && control('sex').invalid) {
+        <p class="field__error">Selecciona una opción.</p>
+      }
+    </fieldset>
+
+    <div class="field">
+      <label for="reg-phone">Teléfono</label>
+      <input
+        id="reg-phone"
+        type="tel"
+        formControlName="phoneNumber"
+        inputmode="numeric"
+        maxlength="10"
+        required
+        [attr.aria-invalid]="
+          control('phoneNumber').touched && control('phoneNumber').invalid ? 'true' : null
+        "
+        [attr.aria-describedby]="
+          control('phoneNumber').touched && control('phoneNumber').invalid
+            ? 'reg-phone-error'
+            : null
+        "
+      />
+      @if (control('phoneNumber').touched && control('phoneNumber').invalid) {
+        <p class="field__error" id="reg-phone-error">Escribe 10 dígitos, sin espacios.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-email">Correo electrónico</label>
+      <input
+        id="reg-email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        required
+        [attr.aria-invalid]="control('email').touched && control('email').invalid ? 'true' : null"
+        [attr.aria-describedby]="
+          control('email').touched && control('email').invalid ? 'reg-email-error' : null
+        "
+      />
+      @if (control('email').touched && control('email').invalid) {
+        <p class="field__error" id="reg-email-error">Escribe un correo electrónico válido.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="reg-password">Contraseña</label>
+      <input
+        id="reg-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        required
+        [attr.aria-invalid]="
+          control('password').touched && control('password').invalid ? 'true' : null
+        "
+        [attr.aria-describedby]="
+          'reg-password-hint' +
+          (control('password').touched && control('password').invalid ? ' reg-password-error' : '')
+        "
+      />
+      <p class="field__hint" id="reg-password-hint">Al menos 8 caracteres.</p>
+      @if (control('password').touched && control('password').invalid) {
+        <p class="field__error" id="reg-password-error">
+          La contraseña debe tener al menos 8 caracteres.
+        </p>
+      }
+    </div>
+
+    <button type="submit" class="btn btn--primary" [disabled]="isSubmitting()">
+      {{ isSubmitting() ? 'Creando cuenta…' : 'Crear cuenta' }}
+    </button>
+  </form>
+
+  <p class="auth__alt">¿Ya tienes cuenta? <a routerLink="/login">Iniciar sesión</a></p>
+</section>

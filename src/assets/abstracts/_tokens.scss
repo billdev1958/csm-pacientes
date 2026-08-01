@@ -1,0 +1,130 @@
+@use 'variables' as *;
+
+// ==========================================================================
+// Design tokens expuestos como custom properties
+// ==========================================================================
+//
+// El proyecto tenía dos sistemas de color: los 9 colores semánticos de
+// _variables.scss y una rampa slate escrita a mano como literales hex,
+// repetida cientos de veces (#f1f5f9 59 veces, #64748b 55, #94a3b8 48...).
+// La rampa nunca estuvo declarada en ninguna parte.
+//
+// Aquí se declara una sola vez. Se emiten como custom properties de CSS, no
+// solo como variables de Sass, porque son justamente los valores que deben
+// poder cambiar en tiempo de ejecución: un tema claro/oscuro no puede
+// recompilar Sass.
+//
+// Lo que NO se expone: la escala tipográfica, los z-index y los espaciados.
+// Esos no varían en ejecución y las variables de Sass son lo correcto para
+// ellos (los $spacing-* se usan 454 veces y siguen intactos).
+//
+// Para añadir un tema oscuro basta sobrescribir estas mismas propiedades:
+//
+//   :root[data-theme='dark'] {
+//     --surface-page: #0f172a;
+//     --text-strong: #f8fafc;
+//     ...
+//   }
+
+// Valores por defecto también como variables de Sass, para los pocos sitios
+// que necesiten pasarlos a una función de color en tiempo de compilación.
+$text-strong: #0f172a;
+$text-body: #334155;
+$text-default: #475569;
+$text-muted: #64748b;
+$text-disabled: #94a3b8;
+$border-strong: #cbd5e1;
+$border-subtle: #e2e8f0;
+$surface-card: #ffffff;
+$surface-raised: #f8fafc;
+$surface-sunken: #f1f5f9;
+
+:root {
+  // Texto, de más a menos contraste
+  --text-strong: #{$text-strong};
+  --text-body: #{$text-body};
+  --text-default: #{$text-default};
+  --text-muted: #{$text-muted};
+  --text-disabled: #{$text-disabled};
+
+  // Bordes y separadores
+  --border-strong: #{$border-strong};
+  --border-subtle: #{$border-subtle};
+
+  // Superficies
+  --surface-card: #{$surface-card};
+  --surface-raised: #{$surface-raised};
+  --surface-sunken: #{$surface-sunken};
+
+  // Colores de marca, para que un tema pueda ajustarlos sin recompilar
+  --color-primary: #{$color-primary};
+  --color-secondary: #{$color-secondary};
+  --color-accent: #{$color-accent};
+  --color-error: #{$color-error};
+}
+
+// ==========================================================================
+// Colores de estado
+// ==========================================================================
+//
+// Estaban escritos como literales hex de la paleta de Tailwind, sin nombre:
+// #10b981 el verde de éxito, #854d0e el ámbar de aviso, #ef4444 el rojo, cada
+// uno con dos o tres tintes de superficie repetidos por los componentes.
+//
+// Cada estado tiene tres piezas con propósitos distintos:
+//   *-base     para iconos, bordes y fondos rellenos (no requiere 4.5:1)
+//   *-text     variante oscurecida para TEXTO sobre superficies claras
+//   *-surface  fondo claro del estado
+//
+// Los `-text` están calculados sobre #FFFFFF y #f8fafc: el verde #10b981 daba
+// 2.42:1 como texto y el rojo #ef4444 3.60:1, ambos por debajo del 4.5:1 que
+// pide WCAG 1.4.3.
+$success-base: #10b981;
+$success-text: #0b835b; // 4.55:1
+$success-strong: #064e3b;
+$success-deep: #022c22;
+$success-surface: #ecfdf5;
+$success-surface-strong: #d1fae5;
+
+$warning-base: #d97706;
+$warning-text: #854d0e; // 6.55:1
+$warning-strong: #a16207;
+$warning-surface: #fefce8;
+$warning-surface-strong: #fef3c7;
+$warning-border: #fde047;
+
+$danger-base: #ef4444;
+// El texto de peligro reutiliza $color-error, que ya cumple con 6.06:1
+$danger-surface: #fef2f2;
+$danger-surface-strong: #fee2e2;
+
+// Neutral profundo, usado tanto como texto enfático como fondo oscuro
+$text-heading: #1e293b;
+// Superficie del panel lateral, apenas distinta de --surface-card
+$surface-nav: #fafbfc;
+
+:root {
+  --success: #{$success-base};
+  --success-text: #{$success-text};
+  --success-strong: #{$success-strong};
+  --success-deep: #{$success-deep};
+  --success-surface: #{$success-surface};
+  --success-surface-strong: #{$success-surface-strong};
+
+  --warning: #{$warning-base};
+  --warning-text: #{$warning-text};
+  --warning-strong: #{$warning-strong};
+  --warning-surface: #{$warning-surface};
+  --warning-surface-strong: #{$warning-surface-strong};
+  --warning-border: #{$warning-border};
+
+  --danger: #{$danger-base};
+  --danger-text: #{$color-error};
+  // $color-error-hover estaba declarado y sin usar; este es su caso
+  --danger-text-hover: #{$color-error-hover};
+  --danger-surface: #{$danger-surface};
+  --danger-surface-strong: #{$danger-surface-strong};
+
+  --text-heading: #{$text-heading};
+  --surface-nav: #{$surface-nav};
+}

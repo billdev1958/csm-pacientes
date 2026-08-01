@@ -1,0 +1,199 @@
+@use 'variables' as *;
+
+// ==========================================================================
+// SCSS Mixins (Reutilizables) - Merged
+// ==========================================================================
+
+// 1. Media Queries (Breakpoints)
+$breakpoints: (
+  'sm': 576px,
+  'md': 768px,
+  'lg': 992px,
+  'xl': 1200px,
+  'xxl': 1400px,
+) !default;
+
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (min-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint no válido: #{$breakpoint}. Los breakpoints disponibles son: #{map-keys($breakpoints)}.";
+  }
+}
+
+// 2. Centrado con Flexbox (Flexbox Centering)
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// 3. Centrado Absoluto (Absolute Centering)
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// 4. Truncamiento de Texto (Text Truncation)
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-truncate-lines($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 5. Hover y Focus Simultáneo
+@mixin hover {
+  &:hover,
+  &:focus {
+    @content;
+  }
+}
+
+// 6. Transiciones Suaves (Transitions)
+@mixin transition($property: all, $time: 0.3s, $easing: ease) {
+  transition: $property $time $easing;
+}
+
+// 7. Ocultamiento Visual (Screen Reader Only)
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 8. Barra de Desplazamiento Personalizada (Custom Scrollbar)
+@mixin scrollbar($size: 8px, $thumb-color: #888, $track-color: #f1f1f1) {
+  &::-webkit-scrollbar {
+    width: $size;
+    height: $size;
+  }
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: 4px;
+
+    &:hover {
+      background: darken($thumb-color, 10%);
+    }
+  }
+}
+
+// --------------------------------------------------------------------------
+// 9. Component Mixins (Cards, Buttons, Inputs)
+// --------------------------------------------------------------------------
+@mixin glass-card(
+  $bg-color: var(--surface-card),
+  $blur: 16px,
+  $padding: $spacing-10,
+  $border: $color-secondary
+) {
+  background-color: $bg-color;
+  box-shadow: $shadow-xl;
+  border-radius: $border-radius-2xl;
+  padding: $padding;
+  border: $border-width-thin solid $border;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+}
+
+@mixin button-solid($bg: $color-primary, $text: var(--surface-card), $hover: $color-accent-hover) {
+  width: 100%;
+  padding: $spacing-3;
+  background-color: $bg;
+  color: $text;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-md;
+  border: none;
+  cursor: pointer;
+  transition: background-color $transition-fast $ease-in-out;
+  font-family: $font-family-base;
+
+  &:hover {
+    background-color: $hover;
+  }
+}
+
+@mixin input-base {
+  width: 100%;
+  padding: $spacing-3 $spacing-5;
+  border: $border-width-thin solid #d1d5db;
+  border-radius: $border-radius-lg;
+  background-color: $color-box;
+  color: $color-text;
+  box-sizing: border-box;
+  font-family: $font-family-base;
+  transition:
+    box-shadow $transition-fast $ease-in-out,
+    border-color $transition-fast $ease-in-out;
+
+  &:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 $border-width-thick $color-secondary;
+  }
+}
+
+// --------------------------------------------------------------------------
+// 10. Icon Filter Hacks (For PNG coloring)
+// --------------------------------------------------------------------------
+@mixin icon-filter-white {
+  filter: brightness(0) invert(1);
+}
+
+@mixin icon-filter-primary {
+  // Approximate hack for $color-primary ($color-primary)
+  filter: invert(24%) sepia(30%) saturate(579%) hue-rotate(85deg) brightness(96%) contrast(89%);
+}
+
+@mixin icon-filter-slate {
+  // Approximate hack for var(--text-muted) (slate gray)
+  filter: brightness(0) invert(0.5) sepia(0.1) hue-rotate(180deg) saturate(0.2);
+}
+
+@mixin icon-filter-danger {
+  // Approximate hack for $color-error ($color-error / red)
+  filter: invert(33%) sepia(50%) saturate(1251%) hue-rotate(334deg) brightness(96%) contrast(92%);
+}
+
+/// Anillo de foco visible para navegación por teclado.
+///
+/// El proyecto tenía `outline: none` en 15 sitios y ningún `:focus-visible`, así
+/// que quien navega con teclado no tenía referencia de dónde estaba. Se usa
+/// `:focus-visible` (no `:focus`) para que el anillo no aparezca al hacer clic
+/// con el ratón, que es la razón original por la que se quitó el outline.
+/// Emite solo las propiedades: quien lo llama decide el selector, así que
+/// sirve tanto para una regla global `:focus-visible` como para un componente.
+@mixin focus-ring($color: $color-primary) {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

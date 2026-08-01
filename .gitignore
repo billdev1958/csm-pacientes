@@ -1,0 +1,15 @@
+# Dependencias y compilación
+/node_modules
+/dist
+/tmp
+/out-tsc
+/.angular/cache
+
+# Entorno y secretos
+.env
+.env.*
+
+# Editor y sistema
+.DS_Store
+*.log
+Thumbs.db

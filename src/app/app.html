@@ -1,0 +1,36 @@
+<app-top-alert />
+
+<div class="layout">
+  <header class="layout__header">
+    <a class="brand" routerLink="/mis-citas">
+      <span class="brand__name">Sanatorio</span>
+      <span class="brand__sub">Portal de Pacientes</span>
+    </a>
+
+    @if (isAuthenticated()) {
+      <nav class="nav" aria-label="Navegación principal">
+        <a
+          routerLink="/mis-citas"
+          routerLinkActive="nav__link--active"
+          ariaCurrentWhenActive="page"
+          class="nav__link"
+        >
+          Mis citas
+        </a>
+        <a
+          routerLink="/agendar"
+          routerLinkActive="nav__link--active"
+          ariaCurrentWhenActive="page"
+          class="nav__link"
+        >
+          Agendar cita
+        </a>
+        <button type="button" class="nav__logout" (click)="logout()">Cerrar sesión</button>
+      </nav>
+    }
+  </header>
+
+  <main class="layout__main">
+    <router-outlet />
+  </main>
+</div>

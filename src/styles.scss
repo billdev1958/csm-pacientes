@@ -1,0 +1,143 @@
+@use 'assets/abstracts/index';
+
+/* ==========================================================================
+   Estilos globales — Portal de Pacientes
+   ==========================================================================
+
+   El sistema de diseño (tokens, mixins y animaciones) se comparte con el panel
+   de administración `csm-admin-2.0`: es la misma institución y debe verse igual.
+   Lo que NO se copió son los estilos de componente del admin, porque este portal
+   tiene otras pantallas y arrastrarlos habría traído 7000 líneas inservibles.
+
+   A diferencia del admin, aquí los estilos de cada componente viven en su propio
+   `styleUrl` para aprovechar el encapsulamiento de Angular: en el admin todo
+   quedó global y por eso la pantalla de login descarga la hoja de impresión del
+   historial clínico. */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: index.$font-family-base;
+  color: var(--text-body);
+  background-color: index.$color-background;
+  min-height: 100vh;
+  width: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* Contenido disponible para lectores de pantalla pero no visible: etiquetas de
+   campos, títulos de tabla y nombres de región que no caben en el diseño. */
+.visually-hidden {
+  @include index.sr-only;
+}
+
+/* Foco visible para navegación por teclado. Se usa :focus-visible en lugar de
+   :focus para que el anillo no aparezca al hacer clic con el ratón. */
+:focus-visible {
+  @include index.focus-ring;
+}
+
+/* Formularios y botones. Viven en el ámbito global porque los comparten todas
+   las pantallas; lo específico de cada pantalla va en su propio styleUrl. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: index.$spacing-2;
+
+  label {
+    font-size: index.$font-size-sm;
+    font-weight: index.$font-weight-semibold;
+    color: var(--text-body);
+  }
+
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: index.$font-size-base;
+    padding: index.$spacing-3;
+    border: 1px solid var(--border-strong);
+    border-radius: index.$border-radius-md;
+    background-color: var(--surface-card);
+    color: var(--text-strong);
+
+    &[aria-invalid='true'] {
+      border-color: var(--danger);
+    }
+  }
+}
+
+.field__error {
+  margin: 0;
+  font-size: index.$font-size-sm;
+  color: var(--danger-text);
+}
+
+.btn {
+  font-family: inherit;
+  font-size: index.$font-size-base;
+  font-weight: index.$font-weight-semibold;
+  padding: index.$spacing-3 index.$spacing-6;
+  border: none;
+  border-radius: index.$border-radius-md;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background-color: index.$color-primary;
+    color: var(--surface-card);
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: index.$color-primary;
+    border: 1px solid var(--border-strong);
+  }
+
+  &--danger {
+    background-color: var(--danger-surface);
+    color: var(--danger-text);
+    border: 1px solid var(--danger);
+  }
+}
+
+.field__hint {
+  margin: 0;
+  font-size: index.$font-size-xs;
+  color: var(--text-muted);
+}
+
+.field__optional {
+  font-weight: index.$font-weight-normal;
+  color: var(--text-muted);
+}
+
+.field--group {
+  border: 1px solid var(--border-subtle);
+  border-radius: index.$border-radius-md;
+  padding: index.$spacing-4;
+
+  legend {
+    font-size: index.$font-size-sm;
+    font-weight: index.$font-weight-semibold;
+    padding: 0 index.$spacing-2;
+  }
+}
+
+.field__radio {
+  display: flex;
+  align-items: center;
+  gap: index.$spacing-2;
+  font-weight: index.$font-weight-normal;
+}

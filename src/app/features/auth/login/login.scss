@@ -1,0 +1,49 @@
+@use '../../../../assets/abstracts' as *;
+
+.auth {
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: $spacing-8;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-base;
+}
+
+.auth__title {
+  font-family: $font-family-heading;
+  font-size: $font-size-2xl;
+  color: $color-primary;
+  margin: 0 0 $spacing-2;
+}
+
+.auth__lead {
+  color: var(--text-muted);
+  margin: 0 0 $spacing-6;
+}
+
+.auth__error {
+  margin: 0 0 $spacing-4;
+  padding: $spacing-3 $spacing-4;
+  border-radius: $border-radius-md;
+  background-color: var(--danger-surface);
+  color: var(--danger-text);
+  border-left: 3px solid var(--danger);
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-5;
+}
+
+.auth__alt {
+  margin: $spacing-6 0 0;
+  text-align: center;
+  color: var(--text-muted);
+
+  a {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}

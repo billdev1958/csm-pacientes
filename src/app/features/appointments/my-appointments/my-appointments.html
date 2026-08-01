@@ -1,0 +1,95 @@
+<div class="page__head">
+  <h1 class="page__title">Mis citas</h1>
+  <a routerLink="/agendar" class="btn btn--primary">Agendar cita</a>
+</div>
+
+<div class="status-region" role="status" aria-live="polite" aria-atomic="true">
+  @if (isLoading()) {
+    <p class="status">Cargando tus citas…</p>
+  }
+</div>
+
+@if (loadError()) {
+  <p class="page__error" role="alert">{{ loadError() }}</p>
+}
+
+@if (!isLoading() && !loadError()) {
+  @if (hasAppointments()) {
+    <ul class="cards" role="list">
+      @for (appointment of list(); track appointment.appointmentID) {
+        <li class="appointment">
+          <div class="appointment__main">
+            <h2 class="appointment__service">{{ appointment.serviceName }}</h2>
+            <p class="appointment__when">
+              {{ appointment.timeStart | date: "EEEE d 'de' MMMM, HH:mm" : '' : 'es-MX' }}
+            </p>
+            <dl class="appointment__meta">
+              <dt>Paciente</dt>
+              <dd>{{ appointment.fullName }}</dd>
+              <dt>Consultorio</dt>
+              <dd>{{ appointment.officeName }}</dd>
+              <dt>Médico</dt>
+              <dd>{{ appointment.doctorName }}</dd>
+              @if (appointment.statusName) {
+                <dt>Estado</dt>
+                <dd>{{ appointment.statusName }}</dd>
+              }
+            </dl>
+          </div>
+
+          @if (canCancel(appointment)) {
+            <button
+              type="button"
+              class="btn btn--danger"
+              [disabled]="cancellingId() === appointment.appointmentID"
+              [attr.aria-label]="
+                'Cancelar la cita de ' + appointment.serviceName + ' de ' + appointment.fullName
+              "
+              (click)="askCancel(appointment)"
+            >
+              Cancelar
+            </button>
+          }
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="empty">
+      Todavía no tienes citas agendadas.
+      <a routerLink="/agendar">Agenda la primera</a>.
+    </p>
+  }
+}
+
+@if (pendingCancel(); as appointment) {
+  <div class="backdrop" (click)="dismissCancel()">
+    <div
+      class="dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="cancel-title"
+      aria-describedby="cancel-desc"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 class="dialog__title" id="cancel-title">¿Cancelar esta cita?</h2>
+      <p class="dialog__desc" id="cancel-desc">
+        {{ appointment.serviceName }} —
+        {{ appointment.timeStart | date: "EEEE d 'de' MMMM, HH:mm" : '' : 'es-MX' }}. Esta acción no
+        se puede deshacer.
+      </p>
+      <div class="dialog__actions">
+        <button type="button" class="btn btn--ghost" (click)="dismissCancel()">
+          Conservar la cita
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger"
+          [disabled]="cancellingId() !== null"
+          (click)="confirmCancel()"
+        >
+          {{ cancellingId() ? 'Cancelando…' : 'Sí, cancelar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

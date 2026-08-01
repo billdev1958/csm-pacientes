@@ -1,0 +1,80 @@
+@use '../assets/abstracts' as *;
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-4;
+  padding: $spacing-4 $spacing-6;
+  background-color: $color-primary;
+  color: var(--surface-card);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand__name {
+  font-family: $font-family-heading;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+}
+
+.brand__sub {
+  font-size: $font-size-xs;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $color-accent;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+}
+
+.nav__link {
+  color: inherit;
+  text-decoration: none;
+  padding: $spacing-2 $spacing-3;
+  border-radius: $border-radius-md;
+  font-weight: $font-weight-medium;
+
+  &--active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.nav__logout {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: inherit;
+  padding: $spacing-2 $spacing-4;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.layout__main {
+  flex: 1;
+  padding: $spacing-8 $spacing-6;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@include respond-to('md') {
+  .layout__main {
+    padding: $spacing-8;
+  }
+}

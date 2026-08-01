@@ -1,0 +1,50 @@
+<section class="auth" aria-labelledby="login-title">
+  <h1 class="auth__title" id="login-title">Iniciar sesión</h1>
+  <p class="auth__lead">Accede para agendar y consultar tus citas.</p>
+
+  @if (errorMessage()) {
+    <p class="auth__error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <form class="auth__form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="field">
+      <label for="login-email">Correo electrónico</label>
+      <input
+        id="login-email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        required
+        [attr.aria-invalid]="email.touched && email.invalid ? 'true' : null"
+        [attr.aria-describedby]="email.touched && email.invalid ? 'login-email-error' : null"
+      />
+      @if (email.touched && email.invalid) {
+        <p class="field__error" id="login-email-error">Escribe un correo electrónico válido.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="login-password">Contraseña</label>
+      <input
+        id="login-password"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+        required
+        [attr.aria-invalid]="password.touched && password.invalid ? 'true' : null"
+        [attr.aria-describedby]="
+          password.touched && password.invalid ? 'login-password-error' : null
+        "
+      />
+      @if (password.touched && password.invalid) {
+        <p class="field__error" id="login-password-error">Escribe tu contraseña.</p>
+      }
+    </div>
+
+    <button type="submit" class="btn btn--primary" [disabled]="isSubmitting()">
+      {{ isSubmitting() ? 'Verificando…' : 'Entrar' }}
+    </button>
+  </form>
+
+  <p class="auth__alt">¿No tienes cuenta? <a routerLink="/registro">Crear una</a></p>
+</section>
