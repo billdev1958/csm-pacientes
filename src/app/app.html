@@ -5,9 +5,11 @@
 <div class="layout" [class.layout--with-nav]="isAuthenticated()">
   <header class="topbar">
     <a class="brand" routerLink="/mis-citas">
-      <span class="brand__mark" aria-hidden="true">S</span>
+      <!-- alt vacío a propósito: el enlace ya dice "UAEMEX Sanatorio", así que un
+           texto alternativo repetiría la marca dos veces en un lector de pantalla. -->
+      <img src="assets/logo2.png" alt="" class="brand__logo" width="40" height="40" />
       <span class="brand__text">
-        <span class="brand__name">Sanatorio</span>
+        <span class="brand__name">UAEMEX Sanatorio</span>
         <span class="brand__sub">Portal de pacientes</span>
       </span>
     </a>

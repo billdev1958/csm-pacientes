@@ -25,14 +25,26 @@
   background: linear-gradient(90deg, $color-primary, $color-accent);
 }
 
+/* El logo se centra sobre el título: es lo primero que confirma a la persona que
+   está en el sistema correcto antes de escribir su contraseña. */
+.auth__logo {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+  margin: 0 auto $spacing-5;
+}
+
 .auth__title {
   font-size: $font-size-xl;
   margin-bottom: $spacing-2;
+  text-align: center;
 }
 
 .auth__lead {
   color: var(--text-muted);
   margin: 0 0 $spacing-6;
+  text-align: center;
 }
 
 .auth__error {

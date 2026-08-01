@@ -41,17 +41,13 @@
   min-height: 2.75rem;
 }
 
-.brand__mark {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: $border-radius-lg;
-  background-color: $color-accent;
-  color: $color-primary;
-  font-family: $font-family-heading;
-  font-weight: $font-weight-bold;
-  font-size: $font-size-lg;
+/* El logo institucional en el mismo tamaño que la marca de letra que sustituye.
+   Se piden 40px con la imagen de 512px de origen, lo que da nitidez de sobra en
+   pantallas de alta densidad, que son la norma en teléfono. */
+.brand__logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
