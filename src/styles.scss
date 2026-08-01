@@ -178,6 +178,12 @@ h3 {
     /* 48px de alto: el mínimo cómodo para tocar con el pulgar. Escribirlo con
        min-height y no con height deja crecer al textarea. */
     min-height: 3rem;
+    /* La anchura mínima automática de un control es la de su contenido, y la de
+       un `<select>` es la de su opción más larga. Sin esto, un desplegable con
+       un nombre largo ensancha la columna que lo contiene en lugar de recortar
+       el texto, que es lo que descuadraba las dos columnas de Agendar. */
+    width: 100%;
+    min-width: 0;
     padding: $spacing-3;
     border: 1px solid var(--border-strong);
     border-radius: $border-radius-md;
