@@ -167,6 +167,19 @@
               <p class="slots-area__office">{{ officeNames()[0] }}</p>
             }
 
+            <!-- La disponibilidad va ANTES de la lista y no después. Debajo de las
+                 franjas se leía como una respuesta a la que acababas de pulsar
+                 ("hay 1 horario más ese día, ya reservado" justo tras elegir),
+                 cuando solo describe el turno. Aquí es contexto previo a decidir.
+                 Se dice "en este turno" y no "ese día": la búsqueda es por turno,
+                 y por la mañana no se cuentan las franjas de la tarde. -->
+            @if (occupiedCount() > 0) {
+              <p class="slots-area__hint">
+                {{ availableSchedules().length }} de {{ schedules().length }} horarios libres en
+                este turno.
+              </p>
+            }
+
             <ul class="slots" role="list">
               @for (schedule of availableSchedules(); track schedule.id) {
                 <li>
@@ -186,16 +199,6 @@
                 </li>
               }
             </ul>
-
-            @if (occupiedCount() > 0) {
-              <p class="slots-area__hint">
-                @if (occupiedCount() === 1) {
-                  Hay 1 horario más ese día, ya reservado.
-                } @else {
-                  Hay {{ occupiedCount() }} horarios más ese día, ya reservados.
-                }
-              </p>
-            }
           </section>
         }
       </div>
